@@ -1,9 +1,39 @@
-import { Restaurant, MenuItem, Table } from '../types';
+import { Restaurant, MenuItem, Table, Review } from '../types';
+
+// Generate mock reviews
+const generateMockReviews = (itemId: string): Review[] => {
+  const reviews: Review[] = [
+    {
+      id: `${itemId}-rev1`,
+      userId: 'user1',
+      userName: 'John D.',
+      rating: 5,
+      comment: 'Absolutely delicious! The flavors were perfectly balanced.',
+      createdAt: new Date('2024-02-15')
+    },
+    {
+      id: `${itemId}-rev2`,
+      userId: 'user2',
+      userName: 'Sarah M.',
+      rating: 4,
+      comment: 'Really enjoyed this dish. Would definitely order again!',
+      createdAt: new Date('2024-02-10')
+    },
+    {
+      id: `${itemId}-rev3`,
+      userId: 'user3',
+      userName: 'Mike R.',
+      rating: 5,
+      comment: 'One of the best dishes I\'ve had here. Highly recommended!',
+      createdAt: new Date('2024-02-05')
+    }
+  ];
+  return reviews;
+};
 
 // Generate mock menu items
 const generateMockMenuItems = (): MenuItem[] => {
   return [
-    // Veg Items
     {
       id: 'v1',
       name: 'Garden Fresh Salad',
@@ -15,7 +45,23 @@ const generateMockMenuItems = (): MenuItem[] => {
       available: true,
       preparationTime: 10,
       featured: true,
-      tags: ['Healthy', 'Fresh', 'Gluten-Free']
+      tags: ['Healthy', 'Fresh', 'Gluten-Free'],
+      rating: 4.5,
+      ratingCount: 128,
+      reviews: generateMockReviews('v1'),
+      ingredients: [
+        'Mixed Greens',
+        'Cherry Tomatoes',
+        'Cucumber',
+        'Red Onions',
+        'House Dressing'
+      ],
+      nutritionInfo: {
+        calories: 120,
+        protein: 3,
+        carbs: 12,
+        fat: 7
+      }
     },
     {
       id: 'v2',
@@ -28,7 +74,23 @@ const generateMockMenuItems = (): MenuItem[] => {
       available: true,
       preparationTime: 20,
       featured: true,
-      tags: ['Italian', 'Cheesy']
+      tags: ['Italian', 'Cheesy'],
+      rating: 4.7,
+      ratingCount: 256,
+      reviews: generateMockReviews('v2'),
+      ingredients: [
+        'Pizza Dough',
+        'Fresh Tomatoes',
+        'Mozzarella Cheese',
+        'Fresh Basil',
+        'Olive Oil'
+      ],
+      nutritionInfo: {
+        calories: 266,
+        protein: 11,
+        carbs: 33,
+        fat: 10
+      }
     },
     {
       id: 'v3',
@@ -40,7 +102,23 @@ const generateMockMenuItems = (): MenuItem[] => {
       image: 'https://images.pexels.com/photos/7437090/pexels-photo-7437090.jpeg?auto=compress&cs=tinysrgb&w=800',
       available: true,
       preparationTime: 25,
-      tags: ['Spicy', 'Indian']
+      tags: ['Spicy', 'Indian'],
+      rating: 4.6,
+      ratingCount: 189,
+      reviews: generateMockReviews('v3'),
+      ingredients: [
+        'Basmati Rice',
+        'Mixed Vegetables',
+        'Indian Spices',
+        'Ghee',
+        'Saffron'
+      ],
+      nutritionInfo: {
+        calories: 310,
+        protein: 7,
+        carbs: 52,
+        fat: 9
+      }
     },
     {
       id: 'v4',
@@ -52,10 +130,24 @@ const generateMockMenuItems = (): MenuItem[] => {
       image: 'https://images.pexels.com/photos/1487511/pexels-photo-1487511.jpeg?auto=compress&cs=tinysrgb&w=800',
       available: true,
       preparationTime: 18,
-      tags: ['Italian', 'Creamy']
+      tags: ['Italian', 'Creamy'],
+      rating: 4.4,
+      ratingCount: 167,
+      reviews: generateMockReviews('v4'),
+      ingredients: [
+        'Penne Pasta',
+        'Seasonal Vegetables',
+        'Light Cream',
+        'Parmesan Cheese',
+        'Italian Herbs'
+      ],
+      nutritionInfo: {
+        calories: 380,
+        protein: 12,
+        carbs: 58,
+        fat: 12
+      }
     },
-    
-    // Non-Veg Items
     {
       id: 'nv1',
       name: 'Grilled Chicken Breast',
@@ -67,7 +159,23 @@ const generateMockMenuItems = (): MenuItem[] => {
       available: true,
       preparationTime: 22,
       featured: true,
-      tags: ['Protein', 'Healthy']
+      tags: ['Protein', 'Healthy'],
+      rating: 4.8,
+      ratingCount: 234,
+      reviews: generateMockReviews('nv1'),
+      ingredients: [
+        'Chicken Breast',
+        'Herbs',
+        'Olive Oil',
+        'Garlic',
+        'Lemon'
+      ],
+      nutritionInfo: {
+        calories: 165,
+        protein: 31,
+        carbs: 0,
+        fat: 3.6
+      }
     },
     {
       id: 'nv2',
@@ -80,7 +188,23 @@ const generateMockMenuItems = (): MenuItem[] => {
       available: true,
       preparationTime: 15,
       featured: true,
-      tags: ['American', 'Hearty']
+      tags: ['American', 'Hearty'],
+      rating: 4.6,
+      ratingCount: 312,
+      reviews: generateMockReviews('nv2'),
+      ingredients: [
+        'Beef Patty',
+        'Cheddar Cheese',
+        'Lettuce',
+        'Tomato',
+        'Burger Bun'
+      ],
+      nutritionInfo: {
+        calories: 550,
+        protein: 25,
+        carbs: 39,
+        fat: 29
+      }
     },
     {
       id: 'nv3',
@@ -92,7 +216,23 @@ const generateMockMenuItems = (): MenuItem[] => {
       image: 'https://images.pexels.com/photos/7625056/pexels-photo-7625056.jpeg?auto=compress&cs=tinysrgb&w=800',
       available: true,
       preparationTime: 25,
-      tags: ['Indian', 'Spicy', 'Creamy']
+      tags: ['Indian', 'Spicy', 'Creamy'],
+      rating: 4.7,
+      ratingCount: 278,
+      reviews: generateMockReviews('nv3'),
+      ingredients: [
+        'Chicken',
+        'Tomato Sauce',
+        'Cream',
+        'Butter',
+        'Indian Spices'
+      ],
+      nutritionInfo: {
+        calories: 490,
+        protein: 28,
+        carbs: 12,
+        fat: 35
+      }
     },
     {
       id: 'nv4',
@@ -104,10 +244,24 @@ const generateMockMenuItems = (): MenuItem[] => {
       image: 'https://images.pexels.com/photos/3763847/pexels-photo-3763847.jpeg?auto=compress&cs=tinysrgb&w=800',
       available: true,
       preparationTime: 20,
-      tags: ['Seafood', 'Healthy']
+      tags: ['Seafood', 'Healthy'],
+      rating: 4.8,
+      ratingCount: 198,
+      reviews: generateMockReviews('nv4'),
+      ingredients: [
+        'Salmon Fillet',
+        'Lemon',
+        'Fresh Herbs',
+        'Olive Oil',
+        'Garlic'
+      ],
+      nutritionInfo: {
+        calories: 412,
+        protein: 46,
+        carbs: 0,
+        fat: 23
+      }
     },
-    
-    // Drinks - Hot Beverages
     {
       id: 'd1',
       name: 'Cappuccino',
@@ -119,7 +273,21 @@ const generateMockMenuItems = (): MenuItem[] => {
       available: true,
       preparationTime: 5,
       featured: true,
-      tags: ['Coffee', 'Hot']
+      tags: ['Coffee', 'Hot'],
+      rating: 4.6,
+      ratingCount: 345,
+      reviews: generateMockReviews('d1'),
+      ingredients: [
+        'Espresso',
+        'Steamed Milk',
+        'Milk Foam'
+      ],
+      nutritionInfo: {
+        calories: 120,
+        protein: 8,
+        carbs: 12,
+        fat: 4
+      }
     },
     {
       id: 'd2',
@@ -131,10 +299,21 @@ const generateMockMenuItems = (): MenuItem[] => {
       image: 'https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&w=800',
       available: true,
       preparationTime: 3,
-      tags: ['Tea', 'Hot', 'Healthy']
+      tags: ['Tea', 'Hot', 'Healthy'],
+      rating: 4.5,
+      ratingCount: 167,
+      reviews: generateMockReviews('d2'),
+      ingredients: [
+        'Green Tea Leaves',
+        'Hot Water'
+      ],
+      nutritionInfo: {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0
+      }
     },
-    
-    // Drinks - Cold Beverages
     {
       id: 'd3',
       name: 'Fresh Lemonade',
@@ -146,7 +325,22 @@ const generateMockMenuItems = (): MenuItem[] => {
       available: true,
       preparationTime: 5,
       featured: true,
-      tags: ['Refreshing', 'Sweet']
+      tags: ['Refreshing', 'Sweet'],
+      rating: 4.7,
+      ratingCount: 223,
+      reviews: generateMockReviews('d3'),
+      ingredients: [
+        'Fresh Lemons',
+        'Honey',
+        'Mint Leaves',
+        'Cold Water'
+      ],
+      nutritionInfo: {
+        calories: 90,
+        protein: 0,
+        carbs: 24,
+        fat: 0
+      }
     },
     {
       id: 'd4',
@@ -158,10 +352,23 @@ const generateMockMenuItems = (): MenuItem[] => {
       image: 'https://images.pexels.com/photos/1028708/pexels-photo-1028708.jpeg?auto=compress&cs=tinysrgb&w=800',
       available: true,
       preparationTime: 7,
-      tags: ['Fruity', 'Refreshing']
+      tags: ['Fruity', 'Refreshing'],
+      rating: 4.8,
+      ratingCount: 189,
+      reviews: generateMockReviews('d4'),
+      ingredients: [
+        'Fresh Mangoes',
+        'Yogurt',
+        'Honey',
+        'Ice'
+      ],
+      nutritionInfo: {
+        calories: 180,
+        protein: 5,
+        carbs: 36,
+        fat: 2
+      }
     },
-    
-    // Drinks - Mocktails
     {
       id: 'd5',
       name: 'Virgin Mojito',
@@ -172,7 +379,22 @@ const generateMockMenuItems = (): MenuItem[] => {
       image: 'https://images.pexels.com/photos/4021983/pexels-photo-4021983.jpeg?auto=compress&cs=tinysrgb&w=800',
       available: true,
       preparationTime: 8,
-      tags: ['Refreshing', 'Minty']
+      tags: ['Refreshing', 'Minty'],
+      rating: 4.6,
+      ratingCount: 156,
+      reviews: generateMockReviews('d5'),
+      ingredients: [
+        'Mint Leaves',
+        'Lime Juice',
+        'Sugar Syrup',
+        'Soda Water'
+      ],
+      nutritionInfo: {
+        calories: 80,
+        protein: 0,
+        carbs: 20,
+        fat: 0
+      }
     },
     {
       id: 'd6',
@@ -185,7 +407,22 @@ const generateMockMenuItems = (): MenuItem[] => {
       available: true,
       preparationTime: 6,
       featured: true,
-      tags: ['Fruity', 'Sweet']
+      tags: ['Fruity', 'Sweet'],
+      rating: 4.7,
+      ratingCount: 178,
+      reviews: generateMockReviews('d6'),
+      ingredients: [
+        'Pineapple Juice',
+        'Orange Juice',
+        'Passion Fruit Juice',
+        'Grenadine'
+      ],
+      nutritionInfo: {
+        calories: 160,
+        protein: 1,
+        carbs: 40,
+        fat: 0
+      }
     }
   ];
 };

@@ -1,6 +1,7 @@
 import React from 'react';
-import { ShoppingCart, Bell, List, Map, Leaf } from 'lucide-react';
+import { ShoppingCart, Bell, List, Map, Salad, Drumstick, UtensilsCrossed } from 'lucide-react';
 import useStore from '../store';
+import { DietaryFilter } from '../types';
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -19,12 +20,31 @@ const Header: React.FC<HeaderProps> = ({
     currentTable,
     notifications,
     currentOrder,
-    showVegOnly,
-    toggleVegOnly
+    dietaryFilter,
+    setDietaryFilter
   } = useStore();
   
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   const unreadNotifications = notifications.filter(n => !n.read).length;
+
+  const dietaryFilterStyles: Record<DietaryFilter, string> = {
+    all: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+    veg: 'bg-green-100 text-green-700 hover:bg-green-200',
+    nonveg: 'bg-red-100 text-red-700 hover:bg-red-200'
+  };
+
+  const DietaryIcon = {
+    all: UtensilsCrossed,
+    veg: Salad,
+    nonveg: Drumstick
+  }[dietaryFilter];
+
+  const cycleFilter = () => {
+    const filters: DietaryFilter[] = ['all', 'veg', 'nonveg'];
+    const currentIndex = filters.indexOf(dietaryFilter);
+    const nextIndex = (currentIndex + 1) % filters.length;
+    setDietaryFilter(filters[nextIndex]);
+  };
   
   return (
     <header className="bg-white shadow-md sticky top-0 z-10">
@@ -61,15 +81,13 @@ const Header: React.FC<HeaderProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            {/* Veg Only Toggle */}
+            {/* Dietary Filter */}
             <button
-              onClick={toggleVegOnly}
-              className={`relative p-2 rounded-full transition-colors ${
-                showVegOnly ? 'bg-green-100 text-green-700' : 'hover:bg-gray-100'
-              }`}
-              aria-label="Toggle veg only"
+              onClick={cycleFilter}
+              className={`relative p-2 rounded-full transition-colors ${dietaryFilterStyles[dietaryFilter]}`}
+              aria-label="Toggle dietary filter"
             >
-              <Leaf className={`h-6 w-6 ${showVegOnly ? 'text-green-700' : 'text-gray-600'}`} />
+              <DietaryIcon className="h-5 w-5" />
             </button>
 
             {/* Order Status Button */}

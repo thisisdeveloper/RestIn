@@ -6,7 +6,8 @@ import {
   MenuItem, 
   CartItem, 
   Order, 
-  Notification 
+  Notification,
+  DietaryFilter
 } from '../types';
 
 const useStore = create<AppState>((set) => ({
@@ -18,14 +19,17 @@ const useStore = create<AppState>((set) => ({
   currentOrder: null,
   notifications: [],
   isScanning: false,
-  showVegOnly: false,
+  dietaryFilter: 'all',
+  selectedMenuItem: null,
 
   // Actions
   setCurrentRestaurant: (restaurant: Restaurant) => set({ currentRestaurant: restaurant }),
   
   setCurrentTable: (table: Table) => set({ currentTable: table }),
   
-  toggleVegOnly: () => set((state) => ({ showVegOnly: !state.showVegOnly })),
+  setDietaryFilter: (filter: DietaryFilter) => set({ dietaryFilter: filter }),
+  
+  setSelectedMenuItem: (item: MenuItem | null) => set({ selectedMenuItem: item }),
   
   addToCart: (item: MenuItem, quantity: number, specialInstructions?: string) => 
     set((state) => {

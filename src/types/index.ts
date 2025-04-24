@@ -1,4 +1,14 @@
 export type CategoryType = 'Veg' | 'NonVeg' | 'Drink';
+export type DietaryFilter = 'all' | 'veg' | 'nonveg';
+
+export interface Review {
+  id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+}
 
 export interface MenuItem {
   id: string;
@@ -9,9 +19,19 @@ export interface MenuItem {
   subCategory: string;
   image: string;
   available: boolean;
-  preparationTime: number; // in minutes
+  preparationTime: number;
   featured?: boolean;
   tags?: string[];
+  rating?: number;
+  ratingCount?: number;
+  reviews?: Review[];
+  ingredients?: string[];
+  nutritionInfo?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
 }
 
 export interface Restaurant {
@@ -56,30 +76,19 @@ export interface Notification {
 }
 
 export interface AppState {
-  // Restaurant and table information
   currentRestaurant: Restaurant | null;
   currentTable: Table | null;
-  
-  // Cart state
   cart: CartItem[];
-  
-  // Order state
   orders: Order[];
   currentOrder: Order | null;
-  
-  // Notifications
   notifications: Notification[];
-  
-  // QR scanning state
   isScanning: boolean;
+  dietaryFilter: DietaryFilter;
+  selectedMenuItem: MenuItem | null;
   
-  // Veg filter
-  showVegOnly: boolean;
-  
-  // Actions
   setCurrentRestaurant: (restaurant: Restaurant) => void;
   setCurrentTable: (table: Table) => void;
-  toggleVegOnly: () => void;
+  setDietaryFilter: (filter: DietaryFilter) => void;
   addToCart: (item: MenuItem, quantity: number, specialInstructions?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateCartItem: (itemId: string, quantity: number, specialInstructions?: string) => void;
@@ -89,4 +98,5 @@ export interface AppState {
   cancelOrder: (orderId: string) => void;
   markNotificationAsRead: (notificationId: string) => void;
   setScanning: (isScanning: boolean) => void;
+  setSelectedMenuItem: (item: MenuItem | null) => void;
 }

@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import QRScanner from '../components/QRScanner';
-import MenuCategory from '../components/MenuCategory';
 import Header from '../components/Header';
-import Cart from '../components/Cart';
-import OrderStatus from '../components/OrderStatus';
-import Notifications from '../components/Notifications';
 import useStore from '../store';
+import { categories } from '../data/categories';
 import { CategoryType } from '../types';
+
+// Lazy load components
+const MenuCategory = lazy(() => import('../components/MenuCategory'));
+const Cart = lazy(() => import('../components/Cart'));
+const OrderStatus = lazy(() => import('../components/OrderStatus'));
+const Notifications = lazy(() => import('../components/Notifications'));
 
 const CustomerView: React.FC = () => {
   const [showCart, setShowCart] = useState(false);
@@ -17,8 +20,7 @@ const CustomerView: React.FC = () => {
   const { 
     currentRestaurant, 
     currentTable,
-    isScanning,
-    showVegOnly
+    dietaryFilter
   } = useStore();
   
   // Close other overlays when opening a new one
@@ -45,9 +47,6 @@ const CustomerView: React.FC = () => {
     return <QRScanner />;
   }
   
-  // Group menu items by category
-  const categories: CategoryType[] = showVegOnly ? ['Veg', 'Drink'] : ['Veg', 'NonVeg', 'Drink'];
-  
   // Get all subcategories for each category
   const subCategoriesByCategory: Record<CategoryType, string[]> = {
     'Veg': [],
@@ -62,7 +61,7 @@ const CustomerView: React.FC = () => {
     }
   });
   
-  // Filter menu items by search query and veg preference
+  // Filter menu items by search query and dietary preference
   const filteredMenu = currentRestaurant.menu.filter(item => {
     const matchesSearch = searchQuery 
       ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -70,9 +69,13 @@ const CustomerView: React.FC = () => {
         item.subCategory.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
     
-    const matchesVegPref = showVegOnly ? item.category === 'Veg' || item.category === 'Drink' : true;
+    const matchesDietaryPref = dietaryFilter === 'all' 
+      ? true 
+      : dietaryFilter === 'veg' 
+        ? item.category === 'Veg' || item.category === 'Drink'
+        : item.category === 'NonVeg';
     
-    return matchesSearch && matchesVegPref;
+    return matchesSearch && matchesDietaryPref;
   });
   
   // Group filtered items by category
@@ -110,35 +113,39 @@ const CustomerView: React.FC = () => {
         </div>
         
         {/* Menu Categories */}
-        {categories.map((category) => (
-          menuByCategory[category].length > 0 && (
-            <MenuCategory
-              key={category}
-              category={category}
-              items={menuByCategory[category]}
-              subCategories={subCategoriesByCategory[category]}
-            />
-          )
-        ))}
-        
-        {/* No Results */}
-        {filteredMenu.length === 0 && (
-          <div className="py-12 text-center">
-            <p className="text-gray-500">No items found matching "{searchQuery}"</p>
-            <button
-              onClick={() => setSearchQuery('')}
-              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
-            >
-              Clear Search
-            </button>
-          </div>
-        )}
+        <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
+          {categories.map((category) => (
+            menuByCategory[category].length > 0 && (
+              <MenuCategory
+                key={category}
+                category={category}
+                items={menuByCategory[category]}
+                subCategories={subCategoriesByCategory[category]}
+              />
+            )
+          ))}
+          
+          {/* No Results */}
+          {filteredMenu.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="text-gray-500">No items found matching "{searchQuery}"</p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
+        </Suspense>
       </main>
       
       {/* Overlays */}
-      <Cart isVisible={showCart} onClose={() => setShowCart(false)} />
-      <Notifications isVisible={showNotifications} onClose={() => setShowNotifications(false)} />
-      <OrderStatus isVisible={showOrderStatus} onClose={() => setShowOrderStatus(false)} />
+      <Suspense fallback={null}>
+        {showCart && <Cart isVisible={showCart} onClose={() => setShowCart(false)} />}
+        {showNotifications && <Notifications isVisible={showNotifications} onClose={() => setShowNotifications(false)} />}
+        {showOrderStatus && <OrderStatus isVisible={showOrderStatus} onClose={() => setShowOrderStatus(false)} />}
+      </Suspense>
     </div>
   );
 };
