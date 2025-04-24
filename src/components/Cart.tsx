@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, X, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ShoppingCart, X, Trash2, Plus, Minus, UtensilsCrossed } from 'lucide-react';
 import useStore from '../store';
 
 interface CartProps {
@@ -75,11 +75,14 @@ const Cart: React.FC<CartProps> = ({ isVisible, onClose }) => {
                   <div key={item.id} className="bg-gray-50 rounded-lg p-3">
                     <div className="flex justify-between">
                       <div className="flex-1">
-                        <div className="flex justify-between">
-                          <h3 className="font-medium">{item.name}</h3>
-                          <p className="font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                        <div className="flex items-center">
+                          <UtensilsCrossed className="w-4 h-4 text-gray-500 mr-2" />
+                          <div className="flex justify-between flex-1">
+                            <h3 className="font-medium">{item.name}</h3>
+                            <p className="font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
+                        <p className="text-sm text-gray-600 ml-6">${item.price.toFixed(2)} each</p>
                       </div>
                     </div>
                     
@@ -89,14 +92,14 @@ const Cart: React.FC<CartProps> = ({ isVisible, onClose }) => {
                           onClick={() => updateCartItem(item.id, item.quantity - 1)}
                           className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
                         >
-                          <ChevronDown size={16} />
+                          <Minus size={16} />
                         </button>
                         <span className="px-3 py-1">{item.quantity}</span>
                         <button
                           onClick={() => updateCartItem(item.id, item.quantity + 1)}
                           className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
                         >
-                          <ChevronUp size={16} />
+                          <Plus size={16} />
                         </button>
                       </div>
                       
