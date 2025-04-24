@@ -21,13 +21,14 @@ const Header: React.FC<HeaderProps> = ({
     currentRestaurant, 
     currentTable,
     notifications,
-    currentOrder,
+    orders,
     dietaryFilter,
     setDietaryFilter
   } = useStore();
   
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   const unreadNotifications = notifications.filter(n => !n.read).length;
+  const activeOrders = orders.filter(order => order.status !== 'cancelled' && order.status !== 'delivered').length;
 
   const dietaryFilterStyles: Record<DietaryFilter, string> = {
     all: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
@@ -96,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Order Status Button */}
-            {currentOrder && (
+            {activeOrders > 0 && (
               <button
                 onClick={onOrderStatusClick}
                 className="relative p-2 rounded-full hover:bg-gray-100"
@@ -112,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <span className="absolute top-0 right-0 bg-purple-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
-                  1
+                  {activeOrders}
                 </span>
               </button>
             )}
