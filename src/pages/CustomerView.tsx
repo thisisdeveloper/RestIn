@@ -1,9 +1,10 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState, lazy, Suspense, useEffect } from 'react';
 import QRScanner from '../components/QRScanner';
 import Header from '../components/Header';
 import useStore from '../store';
 import { categories } from '../data/categories';
 import { CategoryType } from '../types';
+import { ArrowUp } from 'lucide-react';
 
 // Lazy load components
 const MenuCategory = lazy(() => import('../components/MenuCategory'));
@@ -17,22 +18,48 @@ const CustomerView: React.FC = () => {
   const [showOrderStatus, setShowOrderStatus] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   
   const { 
     currentRestaurant, 
     currentTable,
     dietaryFilter
   } = useStore();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Reset selected tag when dietary filter changes
+  useEffect(() => {
+    setSelectedTag(null);
+  }, [dietaryFilter]);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   
-  // Get all unique tags from menu items
-  const allTags = currentRestaurant?.menu.reduce((tags: string[], item) => {
+  // Get filtered menu items based on dietary preference
+  const dietaryFilteredMenu = currentRestaurant?.menu.filter(item => {
+    if (dietaryFilter === 'all') return true;
+    if (dietaryFilter === 'veg') return item.category === 'Veg' || item.category === 'Drink';
+    return item.category === 'NonVeg';
+  }) || [];
+
+  // Get tags only from the currently filtered items
+  const filteredTags = dietaryFilteredMenu.reduce((tags: string[], item) => {
     item.tags?.forEach(tag => {
       if (!tags.includes(tag)) {
         tags.push(tag);
       }
     });
     return tags;
-  }, []) || [];
+  }, []);
   
   // Close other overlays when opening a new one
   const handleCartClick = () => {
@@ -73,24 +100,18 @@ const CustomerView: React.FC = () => {
   });
   
   // Filter menu items by search query, dietary preference, and selected tag
-  const filteredMenu = currentRestaurant.menu.filter(item => {
+  const filteredMenu = dietaryFilteredMenu.filter(item => {
     const matchesSearch = searchQuery 
       ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.subCategory.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
     
-    const matchesDietaryPref = dietaryFilter === 'all' 
-      ? true 
-      : dietaryFilter === 'veg' 
-        ? item.category === 'Veg' || item.category === 'Drink'
-        : item.category === 'NonVeg';
-    
     const matchesTag = selectedTag 
       ? item.tags?.includes(selectedTag)
       : true;
     
-    return matchesSearch && matchesDietaryPref && matchesTag;
+    return matchesSearch && matchesTag;
   });
   
   // Group filtered items by category
@@ -127,7 +148,7 @@ const CustomerView: React.FC = () => {
           </div>
         </div>
 
-        {/* Filter Tags */}
+        {/* Filter Tags - Now filtered based on dietary preference */}
         <div className="mb-6 overflow-x-auto scrollbar-hide">
           <div className="flex space-x-2 pb-2">
             <button
@@ -140,7 +161,7 @@ const CustomerView: React.FC = () => {
             >
               All
             </button>
-            {allTags.map(tag => (
+            {filteredTags.map(tag => (
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
@@ -186,6 +207,17 @@ const CustomerView: React.FC = () => {
           )}
         </Suspense>
       </main>
+      
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-110 z-50"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="w-6 h-6" />
+        </button>
+      )}
       
       {/* Overlays */}
       <Suspense fallback={null}>
