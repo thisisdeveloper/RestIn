@@ -16,12 +16,23 @@ const CustomerView: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showOrderStatus, setShowOrderStatus] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   
   const { 
     currentRestaurant, 
     currentTable,
     dietaryFilter
   } = useStore();
+  
+  // Get all unique tags from menu items
+  const allTags = currentRestaurant?.menu.reduce((tags: string[], item) => {
+    item.tags?.forEach(tag => {
+      if (!tags.includes(tag)) {
+        tags.push(tag);
+      }
+    });
+    return tags;
+  }, []) || [];
   
   // Close other overlays when opening a new one
   const handleCartClick = () => {
@@ -61,7 +72,7 @@ const CustomerView: React.FC = () => {
     }
   });
   
-  // Filter menu items by search query and dietary preference
+  // Filter menu items by search query, dietary preference, and selected tag
   const filteredMenu = currentRestaurant.menu.filter(item => {
     const matchesSearch = searchQuery 
       ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,7 +86,11 @@ const CustomerView: React.FC = () => {
         ? item.category === 'Veg' || item.category === 'Drink'
         : item.category === 'NonVeg';
     
-    return matchesSearch && matchesDietaryPref;
+    const matchesTag = selectedTag 
+      ? item.tags?.includes(selectedTag)
+      : true;
+    
+    return matchesSearch && matchesDietaryPref && matchesTag;
   });
   
   // Group filtered items by category
@@ -95,7 +110,7 @@ const CustomerView: React.FC = () => {
       
       <main className="max-w-7xl mx-auto py-6 px-4">
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="relative">
             <input
               type="text"
@@ -109,6 +124,35 @@ const CustomerView: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </span>
+          </div>
+        </div>
+
+        {/* Filter Tags */}
+        <div className="mb-6 overflow-x-auto scrollbar-hide">
+          <div className="flex space-x-2 pb-2">
+            <button
+              onClick={() => setSelectedTag(null)}
+              className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                selectedTag === null
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              All
+            </button>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  tag === selectedTag
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
           </div>
         </div>
         
@@ -130,10 +174,13 @@ const CustomerView: React.FC = () => {
             <div className="py-12 text-center">
               <p className="text-gray-500">No items found matching "{searchQuery}"</p>
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedTag(null);
+                }}
                 className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
               >
-                Clear Search
+                Clear Filters
               </button>
             </div>
           )}
