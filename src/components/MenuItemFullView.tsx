@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Star, Clock, ChevronRight, Utensils, Info } from 'lucide-react';
 import { MenuItem } from '../types';
 import useStore from '../store';
@@ -11,9 +11,10 @@ interface MenuItemFullViewProps {
 const MenuItemFullView: React.FC<MenuItemFullViewProps> = ({ item, onClose }) => {
   const { addToCart } = useStore();
   const [quantity, setQuantity] = React.useState(1);
+  const [specialInstructions, setSpecialInstructions] = useState('');
 
   const handleAddToCart = () => {
-    addToCart(item, quantity);
+    addToCart(item, quantity, specialInstructions);
     onClose();
   };
 
@@ -101,17 +102,6 @@ const MenuItemFullView: React.FC<MenuItemFullViewProps> = ({ item, onClose }) =>
                       +
                     </button>
                   </div>
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={!item.available}
-                    className={`px-4 sm:px-6 py-2 rounded-lg font-medium text-sm transition-colors ${
-                      item.available
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    Add to Cart
-                  </button>
                 </div>
               </div>
             </div>
@@ -193,9 +183,37 @@ const MenuItemFullView: React.FC<MenuItemFullViewProps> = ({ item, onClose }) =>
               )}
             </div>
 
+            {/* Special Instructions */}
+            <div className="mb-4">
+              <label htmlFor="special-instructions" className="block text-sm font-medium text-gray-700 mb-2">
+                Special Instructions
+              </label>
+              <textarea
+                id="special-instructions"
+                rows={3}
+                placeholder="Any special requests? (e.g., no onions, extra spicy)"
+                value={specialInstructions}
+                onChange={(e) => setSpecialInstructions(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!item.available}
+              className={`w-full py-3 rounded-lg font-bold text-white ${
+                item.available
+                  ? 'bg-indigo-600 hover:bg-indigo-700'
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+            >
+              Add to Cart
+            </button>
+
             {/* Reviews */}
             {item.reviews && item.reviews.length > 0 && (
-              <div>
+              <div className="mt-8">
                 <h2 className="text-lg sm:text-xl font-bold mb-4">Customer Reviews</h2>
                 <div className="space-y-4">
                   {item.reviews.map(review => (
