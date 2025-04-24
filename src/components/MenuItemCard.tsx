@@ -16,6 +16,13 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({ item }) => {
   
   const { addToCart, cart } = useStore();
   
+  // Generate additional images for demonstration
+  const images = [
+    item.image,
+    item.image.replace('w=800', 'w=801'),
+    item.image.replace('w=800', 'w=802'),
+  ];
+  
   const itemInCart = cart.find(cartItem => cartItem.id === item.id);
   const isInCart = !!itemInCart;
   
@@ -65,11 +72,28 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({ item }) => {
         onClick={() => !isExpanded && setShowFullView(true)}
       >
         <div className="relative">
-          <img 
-            src={item.image} 
-            alt={item.name} 
-            className="w-full h-48 object-cover"
-          />
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex w-full">
+              {images.map((image, index) => (
+                <img 
+                  key={index}
+                  src={image} 
+                  alt={`${item.name} - View ${index + 1}`}
+                  className="w-full h-48 object-cover flex-shrink-0"
+                />
+              ))}
+            </div>
+          </div>
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+            <div className="flex space-x-1">
+              {images.map((_, index) => (
+                <div
+                  key={index}
+                  className="w-1.5 h-1.5 rounded-full bg-white opacity-75"
+                />
+              ))}
+            </div>
+          </div>
           <div className="absolute top-2 left-2">
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${categoryColors[item.category]}`}>
               {item.category}
