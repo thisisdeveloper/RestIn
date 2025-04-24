@@ -432,7 +432,7 @@ const generateMockTables = (): Table[] => {
   return Array.from({ length: 10 }, (_, i) => ({
     id: `table-${i + 1}`,
     number: i + 1,
-    seats: 4 + (i % 2) * 2, // Tables have either 4 or 6 seats
+    seats: 4 + (i % 2) * 2,
     qrCode: `table-${i + 1}-qr`
   }));
 };
@@ -442,7 +442,19 @@ export const generateMockRestaurant = (): Restaurant => {
   return {
     id: 'rest-1',
     name: 'Gourmet Delight',
+    description: 'Experience culinary excellence at Gourmet Delight, where traditional flavors meet modern innovation. Our passionate chefs craft each dish with the finest ingredients, creating memorable dining experiences in an elegant atmosphere.',
     logo: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: {
+      address: '123 Culinary Street, Foodie District, FC 12345',
+      coordinates: {
+        lat: 40.7128,
+        lng: -74.0060
+      }
+    },
+    hours: {
+      open: '11:00',
+      close: '23:00'
+    },
     tables: generateMockTables(),
     menu: generateMockMenuItems()
   };

@@ -7,12 +7,14 @@ interface HeaderProps {
   onCartClick: () => void;
   onNotificationsClick: () => void;
   onOrderStatusClick: () => void;
+  onRestaurantClick: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   onCartClick, 
   onNotificationsClick,
-  onOrderStatusClick
+  onOrderStatusClick,
+  onRestaurantClick
 }) => {
   const { 
     cart, 
@@ -52,7 +54,10 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             {currentRestaurant ? (
-              <div className="flex items-center">
+              <div 
+                className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={onRestaurantClick}
+              >
                 <img 
                   src={currentRestaurant.logo} 
                   alt={currentRestaurant.name}

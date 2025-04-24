@@ -11,11 +11,13 @@ const MenuCategory = lazy(() => import('../components/MenuCategory'));
 const Cart = lazy(() => import('../components/Cart'));
 const OrderStatus = lazy(() => import('../components/OrderStatus'));
 const Notifications = lazy(() => import('../components/Notifications'));
+const RestaurantDetails = lazy(() => import('../components/RestaurantDetails'));
 
 const CustomerView: React.FC = () => {
   const [showCart, setShowCart] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showOrderStatus, setShowOrderStatus] = useState(false);
+  const [showRestaurantDetails, setShowRestaurantDetails] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -65,19 +67,29 @@ const CustomerView: React.FC = () => {
   const handleCartClick = () => {
     setShowNotifications(false);
     setShowOrderStatus(false);
+    setShowRestaurantDetails(false);
     setShowCart(true);
   };
   
   const handleNotificationsClick = () => {
     setShowCart(false);
     setShowOrderStatus(false);
+    setShowRestaurantDetails(false);
     setShowNotifications(true);
   };
   
   const handleOrderStatusClick = () => {
     setShowCart(false);
     setShowNotifications(false);
+    setShowRestaurantDetails(false);
     setShowOrderStatus(true);
+  };
+
+  const handleRestaurantClick = () => {
+    setShowCart(false);
+    setShowNotifications(false);
+    setShowOrderStatus(false);
+    setShowRestaurantDetails(true);
   };
   
   // If restaurant is not set, show QR scanner
@@ -127,6 +139,7 @@ const CustomerView: React.FC = () => {
         onCartClick={handleCartClick} 
         onNotificationsClick={handleNotificationsClick}
         onOrderStatusClick={handleOrderStatusClick}
+        onRestaurantClick={handleRestaurantClick}
       />
       
       <main className="max-w-7xl mx-auto py-6 px-4">
@@ -154,9 +167,9 @@ const CustomerView: React.FC = () => {
             <button
               onClick={() => setSelectedTag(null)}
               className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                selectedTag === null
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                selectedTag === null 
+                  ? 'bg-indigo-600 text-white' 
+                  : 'bg-gray-200 text-gray-800'
               }`}
             >
               All
@@ -224,6 +237,7 @@ const CustomerView: React.FC = () => {
         {showCart && <Cart isVisible={showCart} onClose={() => setShowCart(false)} />}
         {showNotifications && <Notifications isVisible={showNotifications} onClose={() => setShowNotifications(false)} />}
         {showOrderStatus && <OrderStatus isVisible={showOrderStatus} onClose={() => setShowOrderStatus(false)} />}
+        {showRestaurantDetails && <RestaurantDetails isVisible={showRestaurantDetails} onClose={() => setShowRestaurantDetails(false)} />}
       </Suspense>
     </div>
   );

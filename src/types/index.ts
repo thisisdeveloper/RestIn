@@ -40,6 +40,18 @@ export interface Restaurant {
   logo: string;
   tables: Table[];
   menu: MenuItem[];
+  description?: string;
+  location?: {
+    address: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+  hours?: {
+    open: string;
+    close: string;
+  };
 }
 
 export interface Table {
