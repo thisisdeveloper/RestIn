@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, X } from 'lucide-react';
+import { Camera, X, ArrowLeft } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import useStore from '../store';
 import { getRestaurantById, getTableByQRCode } from '../data/mockData';
 
-const QRScanner: React.FC = () => {
+interface QRScannerProps {
+  onClose?: () => void;
+}
+
+const QRScanner: React.FC<QRScannerProps> = ({ onClose }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
@@ -106,48 +110,67 @@ const QRScanner: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-4">
-      <div className="flex flex-col items-center justify-center">
-        <h2 className="text-xl font-bold mb-4">Scan Table QR Code</h2>
-        
-        {isScanning ? (
-          <div className="relative w-full max-w-sm">
-            <div id="qr-reader" className="w-full h-64 overflow-hidden rounded-lg bg-gray-100" />
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white shadow-md">
+        <div className="max-w-lg mx-auto px-4 py-4">
+          <div className="flex items-center">
             <button 
-              onClick={stopScanner}
-              className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md"
-              aria-label="Close scanner"
+              onClick={onClose}
+              className="p-2 -ml-2 rounded-full hover:bg-gray-100"
             >
-              <X className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-6 h-6" />
             </button>
-            
-            {scanError && (
-              <div className="mt-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">
-                {scanError}
-              </div>
-            )}
+            <h1 className="text-xl font-bold ml-2">Scan QR Code</h1>
           </div>
-        ) : (
-          <div className="flex flex-col items-center">
-            <div className="w-64 h-64 bg-gray-100 flex items-center justify-center rounded-lg mb-4">
-              <Camera className="w-16 h-16 text-gray-400" />
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {isScanning ? (
+            <div className="relative">
+              <div id="qr-reader" className="w-full h-64 overflow-hidden rounded-lg bg-gray-100" />
+              <button 
+                onClick={stopScanner}
+                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md"
+                aria-label="Close scanner"
+              >
+                <X className="w-5 h-5 text-gray-700" />
+              </button>
+              
+              {scanError && (
+                <div className="mt-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">
+                  {scanError}
+                </div>
+              )}
             </div>
-            
-            <button
-              onClick={startScanner}
-              className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium shadow-sm hover:bg-indigo-700 transition-colors w-full"
-            >
-              Scan QR Code
-            </button>
-            
-            <button
-              onClick={simulateScan}
-              className="mt-3 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-medium shadow-sm hover:bg-gray-300 transition-colors w-full"
-            >
-              Simulate Scan (Demo)
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className="text-center">
+              <div className="w-48 h-48 bg-gray-100 flex items-center justify-center rounded-lg mx-auto mb-6">
+                <Camera className="w-16 h-16 text-gray-400" />
+              </div>
+              
+              <p className="text-gray-600 mb-8">
+                Scan the QR code on your table to start ordering
+              </p>
+              
+              <button
+                onClick={startScanner}
+                className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium shadow-sm hover:bg-indigo-700 transition-colors mb-4"
+              >
+                Start Scanning
+              </button>
+              
+              <button
+                onClick={simulateScan}
+                className="w-full py-3 bg-gray-200 text-gray-800 rounded-lg font-medium shadow-sm hover:bg-gray-300 transition-colors"
+              >
+                Simulate Scan (Demo)
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
