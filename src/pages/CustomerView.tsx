@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QRScanner from '../components/QRScanner';
 import Header from '../components/Header';
 import PromotionalBanner from '../components/PromotionalBanner';
@@ -16,6 +17,7 @@ const Notifications = lazy(() => import('../components/Notifications'));
 const RestaurantDetails = lazy(() => import('../components/RestaurantDetails'));
 
 const CustomerView: React.FC = () => {
+  const navigate = useNavigate();
   const [showCart, setShowCart] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showOrderStatus, setShowOrderStatus] = useState(false);
@@ -92,6 +94,10 @@ const CustomerView: React.FC = () => {
     setShowNotifications(false);
     setShowOrderStatus(false);
     setShowRestaurantDetails(true);
+  };
+
+  const handleOrderHistoryClick = () => {
+    navigate('/orders');
   };
   
   // If restaurant is not set, show QR scanner
@@ -227,8 +233,7 @@ const CustomerView: React.FC = () => {
       
       {/* Bottom Navigation */}
       <BottomNavigation
-        onOrderStatusClick={handleOrderStatusClick}
-        onNotificationsClick={handleNotificationsClick}
+        onOrderHistoryClick={handleOrderHistoryClick}
         onCartClick={handleCartClick}
       />
       

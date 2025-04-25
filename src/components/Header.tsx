@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed } from 'lucide-react';
+import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck } from 'lucide-react';
 import useStore from '../store';
 import { DietaryFilter } from '../types';
 
@@ -24,7 +24,11 @@ const Header: React.FC<HeaderProps> = ({
   } = useStore();
   
   const unreadNotifications = notifications.filter(n => !n.read).length;
-  const activeOrders = orders.filter(order => order.status !== 'cancelled' && order.status !== 'delivered').length;
+  const activeOrders = orders.filter(order => 
+    order.status !== 'cancelled' && 
+    order.status !== 'delivered' && 
+    order.status !== 'ready'
+  ).length;
 
   const dietaryFilterStyles: Record<DietaryFilter, string> = {
     all: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
@@ -92,22 +96,14 @@ const Header: React.FC<HeaderProps> = ({
               <DietaryIcon className="h-5 w-5" />
             </button>
 
-            {/* Order Status Button */}
+            {/* Active Orders Status */}
             {activeOrders > 0 && (
               <button
                 onClick={onOrderStatusClick}
                 className="relative p-2 rounded-full hover:bg-gray-100"
-                aria-label="View order status"
+                aria-label="View active orders"
               >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-6 w-6 text-gray-600" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+                <ClipboardCheck className="h-6 w-6 text-gray-600" />
                 <span className="absolute top-0 right-0 bg-purple-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
                   {activeOrders}
                 </span>

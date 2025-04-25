@@ -3,20 +3,15 @@ import { Home, ClipboardList, User, ShoppingCart } from 'lucide-react';
 import useStore from '../store';
 
 interface BottomNavigationProps {
-  onOrderStatusClick: () => void;
-  onNotificationsClick: () => void;
+  onOrderHistoryClick: () => void;
   onCartClick: () => void;
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({
-  onOrderStatusClick,
+  onOrderHistoryClick,
   onCartClick
 }) => {
-  const { orders, cart } = useStore();
-  
-  const activeOrders = orders.filter(order => 
-    order.status !== 'cancelled' && order.status !== 'delivered'
-  ).length;
+  const { cart } = useStore();
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
@@ -42,16 +37,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-600 relative"
-            onClick={onOrderStatusClick}
+            className="flex flex-col items-center text-gray-600"
+            onClick={onOrderHistoryClick}
           >
             <ClipboardList className="w-6 h-6" />
             <span className="text-xs mt-1">Orders</span>
-            {activeOrders > 0 && (
-              <span className="absolute -top-1 -right-1 bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                {activeOrders}
-              </span>
-            )}
           </button>
           
           <button className="flex flex-col items-center text-gray-600">
