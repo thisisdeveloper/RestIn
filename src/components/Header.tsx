@@ -1,23 +1,20 @@
 import React from 'react';
-import { ShoppingCart, Bell, List, Map, Salad, Drumstick, UtensilsCrossed } from 'lucide-react';
+import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed } from 'lucide-react';
 import useStore from '../store';
 import { DietaryFilter } from '../types';
 
 interface HeaderProps {
-  onCartClick: () => void;
   onNotificationsClick: () => void;
   onOrderStatusClick: () => void;
   onRestaurantClick: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
-  onCartClick, 
   onNotificationsClick,
   onOrderStatusClick,
   onRestaurantClick
 }) => {
   const { 
-    cart, 
     currentRestaurant, 
     currentTable,
     notifications,
@@ -26,7 +23,6 @@ const Header: React.FC<HeaderProps> = ({
     setDietaryFilter
   } = useStore();
   
-  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   const unreadNotifications = notifications.filter(n => !n.read).length;
   const activeOrders = orders.filter(order => order.status !== 'cancelled' && order.status !== 'delivered').length;
 
@@ -128,20 +124,6 @@ const Header: React.FC<HeaderProps> = ({
               {unreadNotifications > 0 && (
                 <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
                   {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                </span>
-              )}
-            </button>
-            
-            {/* Cart Button */}
-            <button
-              onClick={onCartClick}
-              className="relative p-2 rounded-full hover:bg-gray-100"
-              aria-label="Cart"
-            >
-              <ShoppingCart className="h-6 w-6 text-gray-600" />
-              {totalItems > 0 && (
-                <span className="absolute top-0 right-0 bg-indigo-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
-                  {totalItems > 9 ? '9+' : totalItems}
                 </span>
               )}
             </button>

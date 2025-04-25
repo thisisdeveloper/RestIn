@@ -2,6 +2,7 @@ import React, { useState, lazy, Suspense, useEffect } from 'react';
 import QRScanner from '../components/QRScanner';
 import Header from '../components/Header';
 import PromotionalBanner from '../components/PromotionalBanner';
+import BottomNavigation from '../components/BottomNavigation';
 import useStore from '../store';
 import { categories } from '../data/categories';
 import { CategoryType } from '../types';
@@ -135,9 +136,8 @@ const CustomerView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-[calc(4rem+env(safe-area-inset-bottom))]">
       <Header 
-        onCartClick={handleCartClick} 
         onNotificationsClick={handleNotificationsClick}
         onOrderStatusClick={handleOrderStatusClick}
         onRestaurantClick={handleRestaurantClick}
@@ -165,7 +165,7 @@ const CustomerView: React.FC = () => {
           </div>
         </div>
 
-        {/* Filter Tags - Now filtered based on dietary preference */}
+        {/* Filter Tags */}
         <div className="mb-6 overflow-x-auto scrollbar-hide">
           <div className="flex space-x-2 pb-2">
             <button
@@ -225,11 +225,18 @@ const CustomerView: React.FC = () => {
         </Suspense>
       </main>
       
+      {/* Bottom Navigation */}
+      <BottomNavigation
+        onOrderStatusClick={handleOrderStatusClick}
+        onNotificationsClick={handleNotificationsClick}
+        onCartClick={handleCartClick}
+      />
+      
       {/* Scroll to Top Button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-110 z-50"
+          className="fixed bottom-20 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-110 z-50"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-6 h-6" />
