@@ -4,6 +4,14 @@ import CustomerView from './pages/CustomerView';
 import OrdersPage from './pages/OrdersPage';
 import AccountPage from './pages/AccountPage';
 import ProfilePage from './pages/ProfilePage';
+import WalletPage from './pages/WalletPage';
+import DiscountsPage from './pages/DiscountsPage';
+import RewardsPage from './pages/RewardsPage';
+import RefundsPage from './pages/RefundsPage';
+import FeedbackPage from './pages/FeedbackPage';
+import PreferencesPage from './pages/PreferencesPage';
+import SupportPage from './pages/SupportPage';
+import NotificationsPage from './pages/NotificationsPage';
 import './index.css';
 
 function App() {
@@ -20,6 +28,14 @@ function App() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/discounts" element={<DiscountsPage />} />
+          <Route path="/rewards" element={<RewardsPage />} />
+          <Route path="/refunds" element={<RefundsPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/preferences" element={<PreferencesPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Routes>
       </div>
     </Router>
