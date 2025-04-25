@@ -1,6 +1,7 @@
 import React, { useState, lazy, Suspense, useEffect } from 'react';
 import QRScanner from '../components/QRScanner';
 import Header from '../components/Header';
+import PromotionalBanner from '../components/PromotionalBanner';
 import useStore from '../store';
 import { categories } from '../data/categories';
 import { CategoryType } from '../types';
@@ -143,6 +144,9 @@ const CustomerView: React.FC = () => {
       />
       
       <main className="max-w-7xl mx-auto py-6 px-4">
+        {/* Promotional Banner */}
+        <PromotionalBanner />
+        
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative">
