@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, X, ArrowLeft } from 'lucide-react';
+import { Camera, X, ArrowLeft, LogIn, LogOut } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import useStore from '../store';
 import { getRestaurantById, getTableByQRCode } from '../data/mockData';
+import { useNavigate } from 'react-router-dom';
 
-interface QRScannerProps {
-  onClose?: () => void;
-}
-
-const QRScanner: React.FC<QRScannerProps> = ({ onClose }) => {
+const QRScanner: React.FC = () => {
+  const navigate = useNavigate();
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
@@ -16,7 +14,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose }) => {
   const { 
     setCurrentRestaurant, 
     setCurrentTable, 
-    setScanning: setStoreScanningState 
+    setScanning: setStoreScanningState,
+    isLoggedIn
   } = useStore();
 
   useEffect(() => {
@@ -64,7 +63,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose }) => {
 
   const onScanSuccess = async (decodedText: string) => {
     try {
-      // Expected QR code format: "restaurant-id:table-qr-code"
       const [restaurantId, tableQrCode] = decodedText.split(':');
       
       if (!restaurantId || !tableQrCode) {
@@ -81,23 +79,20 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose }) => {
       setCurrentRestaurant(restaurant);
       setCurrentTable(table);
       stopScanner();
+      navigate('/');
       
     } catch (error) {
       console.error('Error processing QR code:', error);
       setScanError('Invalid QR code or restaurant/table not found. Please try again.');
-      // Keep scanning for another attempt
     }
   };
 
   const onScanFailure = (error: string) => {
-    // This is called frequently when no QR is detected, so we don't want to set state
-    // on every frame. Only report actual errors.
     if (error !== 'No QR code found') {
       console.error('QR scan error:', error);
     }
   };
   
-  // For demo purposes - simulate scanning a valid QR code
   const simulateScan = async () => {
     const restaurant = await getRestaurantById('rest-1');
     const table = await getTableByQRCode('table-1-qr');
@@ -106,22 +101,49 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose }) => {
       setCurrentRestaurant(restaurant);
       setCurrentTable(table);
       stopScanner();
+      navigate('/');
+    }
+  };
+
+  const handleAuthClick = () => {
+    if (isLoggedIn) {
+      // Handle logout
+      navigate('/');
+    } else {
+      navigate('/auth');
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
       <div className="bg-white shadow-md">
         <div className="max-w-lg mx-auto px-4 py-4">
-          <div className="flex items-center">
-            <button 
-              onClick={onClose}
-              className="p-2 -ml-2 rounded-full hover:bg-gray-100"
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button 
+                onClick={() => navigate('/')}
+                className="p-2 -ml-2 rounded-full hover:bg-gray-100"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-xl font-bold ml-2">Scan QR Code</h1>
+            </div>
+            <button
+              onClick={handleAuthClick}
+              className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
             >
-              <ArrowLeft className="w-6 h-6" />
+              {isLoggedIn ? (
+                <>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Login
+                </>
+              )}
             </button>
-            <h1 className="text-xl font-bold ml-2">Scan QR Code</h1>
           </div>
         </div>
       </div>

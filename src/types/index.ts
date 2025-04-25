@@ -97,6 +97,7 @@ export interface AppState {
   isScanning: boolean;
   dietaryFilter: DietaryFilter;
   selectedMenuItem: MenuItem | null;
+  isLoggedIn: boolean;
   
   setCurrentRestaurant: (restaurant: Restaurant) => void;
   setCurrentTable: (table: Table) => void;

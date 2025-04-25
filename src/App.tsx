@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CustomerView from './pages/CustomerView';
 import OrdersPage from './pages/OrdersPage';
 import AccountPage from './pages/AccountPage';
@@ -13,11 +13,11 @@ import PreferencesPage from './pages/PreferencesPage';
 import SupportPage from './pages/SupportPage';
 import NotificationsPage from './pages/NotificationsPage';
 import AuthPage from './pages/AuthPage';
+import QRScanner from './components/QRScanner';
 import './index.css';
 
 function App() {
   useEffect(() => {
-    // Update the page title
     document.title = 'Smart Restaurant Menu';
   }, []);
 
@@ -26,6 +26,7 @@ function App() {
       <div className="min-h-screen bg-gray-100">
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/scan" element={<QRScanner />} />
           <Route path="/" element={<CustomerView />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/account" element={<AccountPage />} />
@@ -38,7 +39,6 @@ function App() {
           <Route path="/preferences" element={<PreferencesPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
       </div>
     </Router>

@@ -21,6 +21,7 @@ const useStore = create<AppState>((set) => ({
   isScanning: false,
   dietaryFilter: 'all',
   selectedMenuItem: null,
+  isLoggedIn: false,
 
   // Actions
   setCurrentRestaurant: (restaurant: Restaurant) => set({ currentRestaurant: restaurant }),
@@ -36,7 +37,6 @@ const useStore = create<AppState>((set) => ({
       const existingItemIndex = state.cart.findIndex((cartItem) => cartItem.id === item.id);
       
       if (existingItemIndex !== -1) {
-        // Update quantity if item exists
         const updatedCart = [...state.cart];
         updatedCart[existingItemIndex] = {
           ...updatedCart[existingItemIndex],
@@ -45,7 +45,6 @@ const useStore = create<AppState>((set) => ({
         };
         return { cart: updatedCart };
       } else {
-        // Add new item
         return { 
           cart: [...state.cart, { ...item, quantity, specialInstructions }] 
         };
@@ -93,7 +92,7 @@ const useStore = create<AppState>((set) => ({
         totalAmount,
         createdAt: new Date(),
         updatedAt: new Date(),
-        estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000) // 30 minutes from now
+        estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000)
       };
       
       const newNotification: Notification = {
