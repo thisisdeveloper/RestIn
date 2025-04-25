@@ -14,6 +14,7 @@ import SupportPage from './pages/SupportPage';
 import NotificationsPage from './pages/NotificationsPage';
 import AuthPage from './pages/AuthPage';
 import QRScanner from './components/QRScanner';
+import SearchPage from './pages/SearchPage';
 import './index.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/scan" element={<QRScanner />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/" element={<CustomerView />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/account" element={<AccountPage />} />
