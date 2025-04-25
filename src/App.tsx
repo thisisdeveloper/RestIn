@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CustomerView from './pages/CustomerView';
 import OrdersPage from './pages/OrdersPage';
+import AccountPage from './pages/AccountPage';
 import './index.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<CustomerView />} />
           <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/account" element={<AccountPage />} />
         </Routes>
       </div>
     </Router>

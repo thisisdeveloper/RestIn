@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, ClipboardList, User, ShoppingCart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useStore from '../store';
 
 interface BottomNavigationProps {
@@ -11,6 +12,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onOrderHistoryClick,
   onCartClick
 }) => {
+  const navigate = useNavigate();
   const { cart } = useStore();
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -44,7 +46,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
             <span className="text-xs mt-1">Orders</span>
           </button>
           
-          <button className="flex flex-col items-center text-gray-600">
+          <button 
+            className="flex flex-col items-center text-gray-600"
+            onClick={() => navigate('/account')}
+          >
             <User className="w-6 h-6" />
             <span className="text-xs mt-1">Account</span>
           </button>
