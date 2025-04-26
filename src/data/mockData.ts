@@ -1,111 +1,7 @@
-import { Restaurant, MenuItem, Table, Review, Stall } from '../types';
-
-// Generate mock reviews
-const generateMockReviews = (itemId: string): Review[] => {
-  const reviews: Review[] = [
-    {
-      id: `${itemId}-rev1`,
-      userId: 'user1',
-      userName: 'John D.',
-      rating: 5,
-      comment: 'Absolutely delicious! The flavors were perfectly balanced.',
-      createdAt: new Date('2024-02-15')
-    },
-    {
-      id: `${itemId}-rev2`,
-      userId: 'user2',
-      userName: 'Sarah M.',
-      rating: 4,
-      comment: 'Really enjoyed this dish. Would definitely order again!',
-      createdAt: new Date('2024-02-10')
-    },
-    {
-      id: `${itemId}-rev3`,
-      userId: 'user3',
-      userName: 'Mike R.',
-      rating: 5,
-      comment: 'One of the best dishes I\'ve had here. Highly recommended!',
-      createdAt: new Date('2024-02-05')
-    }
-  ];
-  return reviews;
-};
-
-// Generate mock menu items
-const generateMockMenuItems = (): MenuItem[] => {
-  return [
-    {
-      id: 'v1',
-      name: 'Garden Fresh Salad',
-      description: 'Mixed greens, cherry tomatoes, cucumber, and house dressing',
-      price: 8.99,
-      category: 'Veg',
-      subCategory: 'Starters',
-      image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800',
-      available: true,
-      preparationTime: 10,
-      featured: true,
-      tags: ['Healthy', 'Fresh', 'Gluten-Free'],
-      rating: 4.5,
-      ratingCount: 128,
-      reviews: generateMockReviews('v1'),
-      ingredients: [
-        'Mixed Greens',
-        'Cherry Tomatoes',
-        'Cucumber',
-        'Red Onions',
-        'House Dressing'
-      ],
-      nutritionInfo: {
-        calories: 120,
-        protein: 3,
-        carbs: 12,
-        fat: 7
-      }
-    },
-    // ... other menu items
-  ];
-};
-
-// Generate mock tables
-const generateMockTables = (): Table[] => {
-  return Array.from({ length: 10 }, (_, i) => ({
-    id: `table-${i + 1}`,
-    number: i + 1,
-    seats: 4 + (i % 2) * 2,
-    qrCode: `table-${i + 1}-qr`
-  }));
-};
-
-// Generate mock stalls for food court
-const generateMockStalls = (): Stall[] => {
-  return [
-    {
-      id: 'stall-1',
-      name: 'Asian Delights',
-      description: 'Authentic Asian cuisine featuring dishes from various regions',
-      logo: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800',
-      cuisine: 'Asian',
-      menu: generateMockMenuItems()
-    },
-    {
-      id: 'stall-2',
-      name: 'Mediterranean Corner',
-      description: 'Fresh Mediterranean dishes with a modern twist',
-      logo: 'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?auto=compress&cs=tinysrgb&w=800',
-      cuisine: 'Mediterranean',
-      menu: generateMockMenuItems()
-    },
-    {
-      id: 'stall-3',
-      name: 'Burger Joint',
-      description: 'Gourmet burgers and sides',
-      logo: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=800',
-      cuisine: 'American',
-      menu: generateMockMenuItems()
-    }
-  ];
-};
+import { Restaurant } from '../types';
+import { generateMockMenuItems } from './menu';
+import { generateMockTables } from './mockTables';
+import { generateMockStalls } from './mockStalls';
 
 // Generate mock restaurant
 export const generateMockRestaurant = (): Restaurant => {
@@ -116,10 +12,13 @@ export const generateMockRestaurant = (): Restaurant => {
     logo: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800',
     venueType: 'restaurant',
     location: {
-      address: '123 Culinary Street, Foodie District, FC 12345',
+      country: 'US',
+      state: 'California',
+      city: 'San Francisco',
+      address: '123 Culinary Street, San Francisco, CA 94101',
       coordinates: {
-        lat: 40.7128,
-        lng: -74.0060
+        lat: 37.7749,
+        lng: -122.4194
       }
     },
     hours: {
@@ -136,11 +35,14 @@ export const generateMockFoodCourt = (): Restaurant => {
   return {
     id: 'fc-1',
     name: 'Global Food Court',
-    description: 'A diverse collection of cuisines from around the world',
+    description: 'A vibrant culinary destination featuring diverse cuisines from around the world. Experience the best of international flavors under one roof in our modern, welcoming atmosphere.',
     logo: 'https://images.pexels.com/photos/1579739/pexels-photo-1579739.jpeg?auto=compress&cs=tinysrgb&w=800',
     venueType: 'foodCourt',
     location: {
-      address: '456 Food Street, Culinary District, FC 54321',
+      country: 'US',
+      state: 'New York',
+      city: 'New York City',
+      address: '456 Food Street, Manhattan, NY 10001',
       coordinates: {
         lat: 40.7128,
         lng: -74.0060
@@ -153,7 +55,7 @@ export const generateMockFoodCourt = (): Restaurant => {
     tables: generateMockTables(),
     stalls: generateMockStalls(),
     currentStallId: 'stall-1',
-    menu: [] // Food courts don't have their own menu, only stalls do
+    menu: []
   };
 };
 

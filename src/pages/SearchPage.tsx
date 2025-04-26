@@ -3,7 +3,7 @@ import { ArrowLeft, Search, MapPin, Navigation, ChevronDown, ChevronUp } from 'l
 import { useNavigate } from 'react-router-dom';
 import { Restaurant } from '../types';
 import useStore from '../store';
-import { mockRestaurant } from '../data/mockData';
+import { mockRestaurant, mockFoodCourt } from '../data/mockData';
 
 const countries = [
   { code: 'US', name: 'United States' },
@@ -35,37 +35,16 @@ interface Location {
   pincode?: string;
 }
 
-const generateMockTables = (): Table[] => {
-  return Array.from({ length: 10 }, (_, i) => ({
-    id: `table-${i + 1}`,
-    number: i + 1,
-    seats: 4 + (i % 2) * 2,
-    qrCode: `table-${i + 1}-qr`
-  }));
-};
-
+// Use both restaurant and food court in the mock data
 const mockRestaurants: Restaurant[] = [
   mockRestaurant,
-  {
-    id: 'rest-2',
-    name: 'Spice Garden',
-    description: 'Authentic Indian cuisine in a cozy setting',
-    logo: 'https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=800',
-    location: {
-      country: 'IN',
-      state: 'Maharashtra',
-      city: 'Mumbai',
-      address: '456 Oak St, Mumbai, Maharashtra 400001',
-      coordinates: { lat: 19.0760, lng: 72.8777 }
-    },
-    tables: generateMockTables(),
-    menu: []
-  },
+  mockFoodCourt,
   {
     id: 'rest-3',
     name: 'Sushi Master',
     description: 'Premium Japanese dining experience',
     logo: 'https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg?auto=compress&cs=tinysrgb&w=800',
+    venueType: 'restaurant',
     location: {
       country: 'US',
       state: 'California',
@@ -73,8 +52,8 @@ const mockRestaurants: Restaurant[] = [
       address: '789 Pine St, San Francisco, CA 94101',
       coordinates: { lat: 37.7749, lng: -122.4194 }
     },
-    tables: generateMockTables(),
-    menu: []
+    tables: mockRestaurant.tables,
+    menu: mockRestaurant.menu
   }
 ];
 
@@ -262,7 +241,12 @@ const SearchPage: React.FC = () => {
                   className="w-24 h-24 object-cover"
                 />
                 <div className="p-4 flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{restaurant.name}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-lg">{restaurant.name}</h3>
+                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                      {restaurant.venueType === 'foodCourt' ? 'Food Court' : 'Restaurant'}
+                    </span>
+                  </div>
                   <p className="text-sm text-gray-600 mb-2">{restaurant.description}</p>
                   <div className="flex items-center text-sm text-gray-500">
                     <Navigation className="w-4 h-4 mr-1" />

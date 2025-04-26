@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck, ChevronDown } from 'lucide-react';
 import useStore from '../store';
 import { DietaryFilter, Stall } from '../types';
@@ -23,6 +23,8 @@ const Header: React.FC<HeaderProps> = ({
     setDietaryFilter,
     setCurrentStall
   } = useStore();
+  
+  const [showStallDropdown, setShowStallDropdown] = useState(false);
   
   const unreadNotifications = notifications.filter(n => !n.read).length;
   const activeOrders = orders.filter(order => 
@@ -52,12 +54,22 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleStallChange = (stallId: string) => {
     setCurrentStall(stallId);
+    setShowStallDropdown(false);
   };
 
   const getCurrentStallName = () => {
     if (!currentRestaurant?.stalls || !currentRestaurant.currentStallId) return null;
     const currentStall = currentRestaurant.stalls.find(s => s.id === currentRestaurant.currentStallId);
     return currentStall?.name;
+  };
+
+  const handleRestaurantClick = (e: React.MouseEvent) => {
+    if (currentRestaurant?.venueType === 'foodCourt') {
+      e.stopPropagation();
+      setShowStallDropdown(!showStallDropdown);
+    } else {
+      onRestaurantClick();
+    }
   };
   
   return (
@@ -68,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({
             {currentRestaurant ? (
               <div 
                 className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={onRestaurantClick}
+                onClick={handleRestaurantClick}
               >
                 <img 
                   src={currentRestaurant.logo} 
@@ -77,16 +89,15 @@ const Header: React.FC<HeaderProps> = ({
                 />
                 <div>
                   <div className="flex items-center">
-                    <h1 className="font-bold text-lg leading-tight">{currentRestaurant.name}</h1>
+                    <h1 className="font-bold text-lg leading-tight">
+                      {currentRestaurant.venueType === 'foodCourt' ? getCurrentStallName() : currentRestaurant.name}
+                    </h1>
                     {currentRestaurant.venueType === 'foodCourt' && (
                       <button 
                         className="ml-2 text-gray-600 hover:text-gray-800"
                         onClick={(e) => {
                           e.stopPropagation();
-                          const dropdown = document.getElementById('stallDropdown');
-                          if (dropdown) {
-                            dropdown.classList.toggle('hidden');
-                          }
+                          setShowStallDropdown(!showStallDropdown);
                         }}
                       >
                         <ChevronDown className="w-4 h-4" />
@@ -99,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({
                       <span className="text-sm text-gray-500">
                         {currentRestaurant.venueType === 'foodCourt' ? (
                           <>
-                            {getCurrentStallName() && `${getCurrentStallName()} • `}Table #{currentTable.number}
+                            {currentRestaurant.name} • Table #{currentTable.number}
                           </>
                         ) : (
                           `Table #${currentTable.number}`
@@ -162,10 +173,9 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Stall Dropdown */}
-        {currentRestaurant?.venueType === 'foodCourt' && currentRestaurant.stalls && (
+        {currentRestaurant?.venueType === 'foodCourt' && currentRestaurant.stalls && showStallDropdown && (
           <div 
-            id="stallDropdown"
-            className="absolute mt-2 w-64 bg-white rounded-lg shadow-lg border hidden z-20"
+            className="absolute mt-2 w-64 bg-white rounded-lg shadow-lg border z-20"
           >
             {currentRestaurant.stalls.map((stall: Stall) => (
               <button
