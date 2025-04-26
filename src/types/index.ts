@@ -1,5 +1,6 @@
 export type CategoryType = 'Veg' | 'NonVeg' | 'Drink';
 export type DietaryFilter = 'all' | 'veg' | 'nonveg';
+export type VenueType = 'restaurant' | 'foodCourt';
 
 export interface Review {
   id: string;
@@ -34,14 +35,29 @@ export interface MenuItem {
   };
 }
 
+export interface Stall {
+  id: string;
+  name: string;
+  description: string;
+  logo: string;
+  cuisine: string;
+  menu: MenuItem[];
+}
+
 export interface Restaurant {
   id: string;
   name: string;
   logo: string;
+  venueType: VenueType;
   tables: Table[];
   menu: MenuItem[];
+  stalls?: Stall[];
+  currentStallId?: string;
   description?: string;
   location?: {
+    country?: string;
+    state?: string;
+    city?: string;
     address: string;
     coordinates: {
       lat: number;
@@ -64,6 +80,7 @@ export interface Table {
 export interface CartItem extends MenuItem {
   quantity: number;
   specialInstructions?: string;
+  stallId?: string;
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
@@ -102,7 +119,7 @@ export interface AppState {
   setCurrentRestaurant: (restaurant: Restaurant) => void;
   setCurrentTable: (table: Table) => void;
   setDietaryFilter: (filter: DietaryFilter) => void;
-  addToCart: (item: MenuItem, quantity: number, specialInstructions?: string) => void;
+  addToCart: (item: MenuItem, quantity: number, specialInstructions?: string, stallId?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateCartItem: (itemId: string, quantity: number, specialInstructions?: string) => void;
   clearCart: () => void;
@@ -112,4 +129,5 @@ export interface AppState {
   markNotificationAsRead: (notificationId: string) => void;
   setScanning: (isScanning: boolean) => void;
   setSelectedMenuItem: (item: MenuItem | null) => void;
+  setCurrentStall: (stallId: string) => void;
 }

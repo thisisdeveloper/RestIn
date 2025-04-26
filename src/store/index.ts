@@ -11,7 +11,6 @@ import {
 } from '../types';
 
 const useStore = create<AppState>((set) => ({
-  // Initial state
   currentRestaurant: null,
   currentTable: null,
   cart: [],
@@ -23,7 +22,6 @@ const useStore = create<AppState>((set) => ({
   selectedMenuItem: null,
   isLoggedIn: false,
 
-  // Actions
   setCurrentRestaurant: (restaurant: Restaurant) => set({ currentRestaurant: restaurant }),
   
   setCurrentTable: (table: Table) => set({ currentTable: table }),
@@ -31,10 +29,19 @@ const useStore = create<AppState>((set) => ({
   setDietaryFilter: (filter: DietaryFilter) => set({ dietaryFilter: filter }),
   
   setSelectedMenuItem: (item: MenuItem | null) => set({ selectedMenuItem: item }),
+
+  setCurrentStall: (stallId: string) => set((state) => ({
+    currentRestaurant: state.currentRestaurant ? {
+      ...state.currentRestaurant,
+      currentStallId: stallId
+    } : null
+  })),
   
-  addToCart: (item: MenuItem, quantity: number, specialInstructions?: string) => 
+  addToCart: (item: MenuItem, quantity: number, specialInstructions?: string, stallId?: string) => 
     set((state) => {
-      const existingItemIndex = state.cart.findIndex((cartItem) => cartItem.id === item.id);
+      const existingItemIndex = state.cart.findIndex((cartItem) => 
+        cartItem.id === item.id && cartItem.stallId === stallId
+      );
       
       if (existingItemIndex !== -1) {
         const updatedCart = [...state.cart];
@@ -46,7 +53,7 @@ const useStore = create<AppState>((set) => ({
         return { cart: updatedCart };
       } else {
         return { 
-          cart: [...state.cart, { ...item, quantity, specialInstructions }] 
+          cart: [...state.cart, { ...item, quantity, specialInstructions, stallId }] 
         };
       }
     }),

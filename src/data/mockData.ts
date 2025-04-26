@@ -1,4 +1,4 @@
-import { Restaurant, MenuItem, Table, Review } from '../types';
+import { Restaurant, MenuItem, Table, Review, Stall } from '../types';
 
 // Generate mock reviews
 const generateMockReviews = (itemId: string): Review[] => {
@@ -32,7 +32,7 @@ const generateMockReviews = (itemId: string): Review[] => {
 };
 
 // Generate mock menu items
-export const generateMockMenuItems = (): MenuItem[] => {
+const generateMockMenuItems = (): MenuItem[] => {
   return [
     {
       id: 'v1',
@@ -63,36 +63,7 @@ export const generateMockMenuItems = (): MenuItem[] => {
         fat: 7
       }
     },
-    {
-      id: 'v2',
-      name: 'Margherita Pizza',
-      description: 'Fresh tomatoes, mozzarella cheese, and basil on a thin crust',
-      price: 12.99,
-      category: 'Veg',
-      subCategory: 'Mains',
-      image: 'https://images.pexels.com/photos/1146760/pexels-photo-1146760.jpeg?auto=compress&cs=tinysrgb&w=800',
-      available: true,
-      preparationTime: 20,
-      featured: true,
-      tags: ['Italian', 'Cheesy'],
-      rating: 4.7,
-      ratingCount: 256,
-      reviews: generateMockReviews('v2'),
-      ingredients: [
-        'Pizza Dough',
-        'Fresh Tomatoes',
-        'Mozzarella Cheese',
-        'Fresh Basil',
-        'Olive Oil'
-      ],
-      nutritionInfo: {
-        calories: 266,
-        protein: 11,
-        carbs: 33,
-        fat: 10
-      }
-    },
-    // ... rest of the menu items
+    // ... other menu items
   ];
 };
 
@@ -106,6 +77,36 @@ const generateMockTables = (): Table[] => {
   }));
 };
 
+// Generate mock stalls for food court
+const generateMockStalls = (): Stall[] => {
+  return [
+    {
+      id: 'stall-1',
+      name: 'Asian Delights',
+      description: 'Authentic Asian cuisine featuring dishes from various regions',
+      logo: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800',
+      cuisine: 'Asian',
+      menu: generateMockMenuItems()
+    },
+    {
+      id: 'stall-2',
+      name: 'Mediterranean Corner',
+      description: 'Fresh Mediterranean dishes with a modern twist',
+      logo: 'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?auto=compress&cs=tinysrgb&w=800',
+      cuisine: 'Mediterranean',
+      menu: generateMockMenuItems()
+    },
+    {
+      id: 'stall-3',
+      name: 'Burger Joint',
+      description: 'Gourmet burgers and sides',
+      logo: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=800',
+      cuisine: 'American',
+      menu: generateMockMenuItems()
+    }
+  ];
+};
+
 // Generate mock restaurant
 export const generateMockRestaurant = (): Restaurant => {
   return {
@@ -113,6 +114,7 @@ export const generateMockRestaurant = (): Restaurant => {
     name: 'Gourmet Delight',
     description: 'Experience culinary excellence at Gourmet Delight, where traditional flavors meet modern innovation. Our passionate chefs craft each dish with the finest ingredients, creating memorable dining experiences in an elegant atmosphere.',
     logo: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800',
+    venueType: 'restaurant',
     location: {
       address: '123 Culinary Street, Foodie District, FC 12345',
       coordinates: {
@@ -129,14 +131,45 @@ export const generateMockRestaurant = (): Restaurant => {
   };
 };
 
+// Generate mock food court
+export const generateMockFoodCourt = (): Restaurant => {
+  return {
+    id: 'fc-1',
+    name: 'Global Food Court',
+    description: 'A diverse collection of cuisines from around the world',
+    logo: 'https://images.pexels.com/photos/1579739/pexels-photo-1579739.jpeg?auto=compress&cs=tinysrgb&w=800',
+    venueType: 'foodCourt',
+    location: {
+      address: '456 Food Street, Culinary District, FC 54321',
+      coordinates: {
+        lat: 40.7128,
+        lng: -74.0060
+      }
+    },
+    hours: {
+      open: '10:00',
+      close: '22:00'
+    },
+    tables: generateMockTables(),
+    stalls: generateMockStalls(),
+    currentStallId: 'stall-1',
+    menu: [] // Food courts don't have their own menu, only stalls do
+  };
+};
+
 // Mock data for development
 export const mockRestaurant = generateMockRestaurant();
+export const mockFoodCourt = generateMockFoodCourt();
 
 // Simulated function to get restaurant data by ID
 export const getRestaurantById = (id: string): Promise<Restaurant> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(mockRestaurant);
+      if (id === 'fc-1') {
+        resolve(mockFoodCourt);
+      } else {
+        resolve(mockRestaurant);
+      }
     }, 500);
   });
 };

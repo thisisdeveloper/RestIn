@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck } from 'lucide-react';
+import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck, ChevronDown } from 'lucide-react';
 import useStore from '../store';
-import { DietaryFilter } from '../types';
+import { DietaryFilter, Stall } from '../types';
 
 interface HeaderProps {
   onNotificationsClick: () => void;
@@ -20,7 +20,8 @@ const Header: React.FC<HeaderProps> = ({
     notifications,
     orders,
     dietaryFilter,
-    setDietaryFilter
+    setDietaryFilter,
+    setCurrentStall
   } = useStore();
   
   const unreadNotifications = notifications.filter(n => !n.read).length;
@@ -48,6 +49,16 @@ const Header: React.FC<HeaderProps> = ({
     const nextIndex = (currentIndex + 1) % filters.length;
     setDietaryFilter(filters[nextIndex]);
   };
+
+  const handleStallChange = (stallId: string) => {
+    setCurrentStall(stallId);
+  };
+
+  const getCurrentStallName = () => {
+    if (!currentRestaurant?.stalls || !currentRestaurant.currentStallId) return null;
+    const currentStall = currentRestaurant.stalls.find(s => s.id === currentRestaurant.currentStallId);
+    return currentStall?.name;
+  };
   
   return (
     <header className="bg-white shadow-md sticky top-0 z-10">
@@ -65,13 +76,37 @@ const Header: React.FC<HeaderProps> = ({
                   className="w-10 h-10 rounded-full object-cover mr-2" 
                 />
                 <div>
-                  <h1 className="font-bold text-lg leading-tight">{currentRestaurant.name}</h1>
-                  {currentTable && (
-                    <div className="flex items-center">
-                      <Map size={14} className="text-gray-500 mr-1" />
-                      <span className="text-sm text-gray-500">Table #{currentTable.number}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center">
+                    <h1 className="font-bold text-lg leading-tight">{currentRestaurant.name}</h1>
+                    {currentRestaurant.venueType === 'foodCourt' && (
+                      <button 
+                        className="ml-2 text-gray-600 hover:text-gray-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const dropdown = document.getElementById('stallDropdown');
+                          if (dropdown) {
+                            dropdown.classList.toggle('hidden');
+                          }
+                        }}
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <Map size={14} className="text-gray-500 mr-1" />
+                    {currentTable && (
+                      <span className="text-sm text-gray-500">
+                        {currentRestaurant.venueType === 'foodCourt' ? (
+                          <>
+                            {getCurrentStallName() && `${getCurrentStallName()} • `}Table #{currentTable.number}
+                          </>
+                        ) : (
+                          `Table #${currentTable.number}`
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -125,6 +160,32 @@ const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Stall Dropdown */}
+        {currentRestaurant?.venueType === 'foodCourt' && currentRestaurant.stalls && (
+          <div 
+            id="stallDropdown"
+            className="absolute mt-2 w-64 bg-white rounded-lg shadow-lg border hidden z-20"
+          >
+            {currentRestaurant.stalls.map((stall: Stall) => (
+              <button
+                key={stall.id}
+                className="w-full px-4 py-2 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg flex items-center"
+                onClick={() => handleStallChange(stall.id)}
+              >
+                <img 
+                  src={stall.logo} 
+                  alt={stall.name}
+                  className="w-8 h-8 rounded-full object-cover mr-2" 
+                />
+                <div>
+                  <div className="font-medium">{stall.name}</div>
+                  <div className="text-sm text-gray-500">{stall.cuisine}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </header>
   );
