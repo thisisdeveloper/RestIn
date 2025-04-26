@@ -4,6 +4,7 @@ import QRScanner from '../components/QRScanner';
 import Header from '../components/Header';
 import PromotionalBanner from '../components/PromotionalBanner';
 import BottomNavigation from '../components/BottomNavigation';
+import CallWaiter from '../components/CallWaiter';
 import useStore from '../store';
 import { categories } from '../data/categories';
 import { CategoryType } from '../types';
@@ -230,6 +231,9 @@ const CustomerView: React.FC = () => {
           )}
         </Suspense>
       </main>
+      
+      {/* Call Waiter Button */}
+      <CallWaiter tableNumber={currentTable.number} />
       
       {/* Bottom Navigation */}
       <BottomNavigation
