@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck, ChevronDown } from 'lucide-react';
+import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck, ChevronDown, Lock, Unlock } from 'lucide-react';
 import useStore from '../store';
 import { DietaryFilter, Stall } from '../types';
 
@@ -21,10 +21,14 @@ const Header: React.FC<HeaderProps> = ({
     orders,
     dietaryFilter,
     setDietaryFilter,
-    setCurrentStall
+    setCurrentStall,
+    setCurrentTable,
+    lockTable,
+    unlockTable
   } = useStore();
   
   const [showStallDropdown, setShowStallDropdown] = useState(false);
+  const [showTableDropdown, setShowTableDropdown] = useState(false);
   
   const unreadNotifications = notifications.filter(n => !n.read).length;
   const activeOrders = orders.filter(order => 
@@ -57,6 +61,11 @@ const Header: React.FC<HeaderProps> = ({
     setShowStallDropdown(false);
   };
 
+  const handleTableChange = (table: typeof currentRestaurant.tables[0]) => {
+    setCurrentTable(table);
+    setShowTableDropdown(false);
+  };
+
   const getCurrentStallName = () => {
     if (!currentRestaurant?.stalls || !currentRestaurant.currentStallId) return null;
     const currentStall = currentRestaurant.stalls.find(s => s.id === currentRestaurant.currentStallId);
@@ -69,6 +78,21 @@ const Header: React.FC<HeaderProps> = ({
       setShowStallDropdown(!showStallDropdown);
     } else {
       onRestaurantClick();
+    }
+  };
+
+  const getAvailableTables = () => {
+    if (!currentRestaurant) return [];
+    return currentRestaurant.tables.filter(table => 
+      table.isAvailable && (!table.isLocked || table.type === 'shared')
+    );
+  };
+
+  const toggleTableLock = (tableId: string, isLocked: boolean) => {
+    if (isLocked) {
+      unlockTable(tableId);
+    } else {
+      lockTable(tableId);
     }
   };
   
@@ -106,17 +130,28 @@ const Header: React.FC<HeaderProps> = ({
                   </div>
                   <div className="flex items-center">
                     <Map size={14} className="text-gray-500 mr-1" />
-                    {currentTable && (
-                      <span className="text-sm text-gray-500">
-                        {currentRestaurant.venueType === 'foodCourt' ? (
-                          <>
-                            {currentRestaurant.name} • Table #{currentTable.number}
-                          </>
-                        ) : (
-                          `Table #${currentTable.number}`
-                        )}
-                      </span>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowTableDropdown(!showTableDropdown);
+                      }}
+                      className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+                    >
+                      {currentTable ? (
+                        <>
+                          {currentRestaurant.venueType === 'foodCourt' ? (
+                            <>
+                              {currentRestaurant.name} • Table #{currentTable.number}
+                            </>
+                          ) : (
+                            `Table #${currentTable.number}`
+                          )}
+                          <ChevronDown className="w-3 h-3 ml-1" />
+                        </>
+                      ) : (
+                        'Select Table'
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -133,7 +168,6 @@ const Header: React.FC<HeaderProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            {/* Dietary Filter */}
             <button
               onClick={cycleFilter}
               className={`relative p-2 rounded-full transition-colors ${dietaryFilterStyles[dietaryFilter]}`}
@@ -142,7 +176,6 @@ const Header: React.FC<HeaderProps> = ({
               <DietaryIcon className="h-5 w-5" />
             </button>
 
-            {/* Active Orders Status */}
             {activeOrders > 0 && (
               <button
                 onClick={onOrderStatusClick}
@@ -156,7 +189,6 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             )}
             
-            {/* Notifications Button */}
             <button
               onClick={onNotificationsClick}
               className="relative p-2 rounded-full hover:bg-gray-100"
@@ -192,6 +224,41 @@ const Header: React.FC<HeaderProps> = ({
                   <div className="font-medium">{stall.name}</div>
                   <div className="text-sm text-gray-500">{stall.cuisine}</div>
                 </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Table Dropdown */}
+        {showTableDropdown && currentRestaurant && (
+          <div className="absolute mt-2 w-64 bg-white rounded-lg shadow-lg border z-20">
+            {getAvailableTables().map((table) => (
+              <button
+                key={table.id}
+                className="w-full px-4 py-2 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between"
+                onClick={() => handleTableChange(table)}
+              >
+                <div>
+                  <div className="font-medium">Table #{table.number}</div>
+                  <div className="text-sm text-gray-500">
+                    {table.seats} seats • {table.type}
+                  </div>
+                </div>
+                {table.type === 'private' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleTableLock(table.id, table.isLocked);
+                    }}
+                    className={`p-1 rounded-full ${
+                      table.isLocked 
+                        ? 'text-red-600 hover:bg-red-50' 
+                        : 'text-green-600 hover:bg-green-50'
+                    }`}
+                  >
+                    {table.isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                  </button>
+                )}
               </button>
             ))}
           </div>

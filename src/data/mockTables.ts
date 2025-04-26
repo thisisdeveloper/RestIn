@@ -5,6 +5,9 @@ export const generateMockTables = (): Table[] => {
     id: `table-${i + 1}`,
     number: i + 1,
     seats: 4 + (i % 2) * 2,
-    qrCode: `table-${i + 1}-qr`
+    qrCode: `table-${i + 1}-qr`,
+    type: i < 5 ? 'private' : 'shared',
+    isAvailable: true,
+    isLocked: false
   }));
 };

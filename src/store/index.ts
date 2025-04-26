@@ -36,6 +36,24 @@ const useStore = create<AppState>((set) => ({
       currentStallId: stallId
     } : null
   })),
+
+  lockTable: (tableId: string) => set((state) => ({
+    currentRestaurant: state.currentRestaurant ? {
+      ...state.currentRestaurant,
+      tables: state.currentRestaurant.tables.map(table => 
+        table.id === tableId ? { ...table, isLocked: true } : table
+      )
+    } : null
+  })),
+
+  unlockTable: (tableId: string) => set((state) => ({
+    currentRestaurant: state.currentRestaurant ? {
+      ...state.currentRestaurant,
+      tables: state.currentRestaurant.tables.map(table => 
+        table.id === tableId ? { ...table, isLocked: false } : table
+      )
+    } : null
+  })),
   
   addToCart: (item: MenuItem, quantity: number, specialInstructions?: string, stallId?: string) => 
     set((state) => {

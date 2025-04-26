@@ -1,6 +1,7 @@
 export type CategoryType = 'Veg' | 'NonVeg' | 'Drink';
 export type DietaryFilter = 'all' | 'veg' | 'nonveg';
 export type VenueType = 'restaurant' | 'foodCourt';
+export type TableType = 'private' | 'shared';
 
 export interface Review {
   id: string;
@@ -75,6 +76,9 @@ export interface Table {
   number: number;
   seats: number;
   qrCode: string;
+  type: TableType;
+  isAvailable: boolean;
+  isLocked: boolean;
 }
 
 export interface CartItem extends MenuItem {
@@ -130,4 +134,6 @@ export interface AppState {
   setScanning: (isScanning: boolean) => void;
   setSelectedMenuItem: (item: MenuItem | null) => void;
   setCurrentStall: (stallId: string) => void;
+  lockTable: (tableId: string) => void;
+  unlockTable: (tableId: string) => void;
 }
