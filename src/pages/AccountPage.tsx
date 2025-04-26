@@ -2,8 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User, ArrowLeft, Wallet, ClipboardList, Gift, Bell, 
-  RefreshCw, MessageSquare, Settings, Share2, LogOut, ChevronRight 
+  RefreshCw, MessageSquare, Settings, Share2, LogIn, LogOut,
+  ChevronRight, DoorOpen
 } from 'lucide-react';
+import useStore from '../store';
 
 const menuItems = [
   { icon: <User size={20} />, label: 'My Profile', link: '/profile' },
@@ -15,21 +17,15 @@ const menuItems = [
   { icon: <MessageSquare size={20} />, label: 'Feedback', link: '/feedback' },
   { icon: <Settings size={20} />, label: 'Preferences', link: '/preferences' },
   { icon: <MessageSquare size={20} />, label: 'Support', link: '/support' },
-  { icon: <Share2 size={20} />, label: 'Share App', action: 'share' },
-  { icon: <LogOut size={20} />, label: 'Logout', action: 'logout' }
+  { icon: <Share2 size={20} />, label: 'Share App', action: 'share' }
 ];
 
 const AccountPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoggedIn, currentRestaurant, setCurrentRestaurant, setCurrentTable } = useStore();
 
   const handleMenuItemClick = (item: typeof menuItems[0]) => {
-    if (item.action === 'logout') {
-      // Handle logout
-      if (confirm('Are you sure you want to logout?')) {
-        // Perform logout logic here
-        navigate('/');
-      }
-    } else if (item.action === 'share') {
+    if (item.action === 'share') {
       // Handle share
       if (navigator.share) {
         navigator.share({
@@ -40,6 +36,26 @@ const AccountPage: React.FC = () => {
       }
     } else {
       navigate(item.link);
+    }
+  };
+
+  const handleAuthClick = () => {
+    if (isLoggedIn) {
+      // Handle logout
+      if (confirm('Are you sure you want to logout?')) {
+        // Perform logout logic here
+        navigate('/');
+      }
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleExitRestaurant = () => {
+    if (confirm('Are you sure you want to exit the restaurant?')) {
+      setCurrentRestaurant(null);
+      setCurrentTable(null);
+      navigate('/scan');
     }
   };
 
@@ -87,6 +103,34 @@ const AccountPage: React.FC = () => {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
         ))}
+
+        {/* Auth Button */}
+        <button
+          onClick={handleAuthClick}
+          className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors border-b"
+        >
+          <div className="flex items-center">
+            <span className="text-gray-600">
+              {isLoggedIn ? <LogOut size={20} /> : <LogIn size={20} />}
+            </span>
+            <span className="ml-3">{isLoggedIn ? 'Logout' : 'Login'}</span>
+          </div>
+          <ChevronRight className="w-5 h-5 text-gray-400" />
+        </button>
+
+        {/* Exit Restaurant Button */}
+        {currentRestaurant && (
+          <button
+            onClick={handleExitRestaurant}
+            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors border-b text-red-600"
+          >
+            <div className="flex items-center">
+              <DoorOpen size={20} />
+              <span className="ml-3">Exit {currentRestaurant.venueType === 'foodCourt' ? 'Food Court' : 'Restaurant'}</span>
+            </div>
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* App Info */}
