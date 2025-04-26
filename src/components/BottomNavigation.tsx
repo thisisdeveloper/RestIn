@@ -6,12 +6,11 @@ import { DietaryFilter } from '../types';
 
 interface BottomNavigationProps {
   onOrderHistoryClick: () => void;
-  onCartClick: () => void;
+  onCartClick?: () => void;
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({
-  onOrderHistoryClick,
-  onCartClick
+  onOrderHistoryClick
 }) => {
   const navigate = useNavigate();
   const { cart, dietaryFilter, setDietaryFilter } = useStore();
@@ -46,7 +45,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           </button>
           
           <button 
-            onClick={onCartClick}
+            onClick={() => navigate('/cart')}
             className="flex flex-col items-center text-gray-600 relative"
           >
             <ShoppingCart className="w-6 h-6" />

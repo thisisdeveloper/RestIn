@@ -15,6 +15,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import AuthPage from './pages/AuthPage';
 import QRScanner from './components/QRScanner';
 import SearchPage from './pages/SearchPage';
+import CartPage from './pages/CartPage';
 import './index.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="/scan" element={<QRScanner />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/" element={<CustomerView />} />
+          <Route path="/cart" element={<CartPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/profile" element={<ProfilePage />} />
