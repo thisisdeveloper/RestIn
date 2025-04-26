@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck, ChevronDown, Lock, Unlock } from 'lucide-react';
 import useStore from '../store';
 import { DietaryFilter, Stall } from '../types';
@@ -30,12 +30,29 @@ const Header: React.FC<HeaderProps> = ({
   const [showStallDropdown, setShowStallDropdown] = useState(false);
   const [showTableDropdown, setShowTableDropdown] = useState(false);
   
+  const stallDropdownRef = useRef<HTMLDivElement>(null);
+  const tableDropdownRef = useRef<HTMLDivElement>(null);
+  
   const unreadNotifications = notifications.filter(n => !n.read).length;
   const activeOrders = orders.filter(order => 
     order.status !== 'cancelled' && 
     order.status !== 'delivered' && 
     order.status !== 'ready'
   ).length;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (stallDropdownRef.current && !stallDropdownRef.current.contains(event.target as Node)) {
+        setShowStallDropdown(false);
+      }
+      if (tableDropdownRef.current && !tableDropdownRef.current.contains(event.target as Node)) {
+        setShowTableDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const dietaryFilterStyles: Record<DietaryFilter, string> = {
     all: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
@@ -223,6 +240,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* Stall Dropdown */}
         {currentRestaurant?.venueType === 'foodCourt' && currentRestaurant.stalls && showStallDropdown && (
           <div 
+            ref={stallDropdownRef}
             className="absolute mt-2 w-64 bg-white rounded-lg shadow-lg border z-20"
           >
             {currentRestaurant.stalls.map((stall: Stall) => (
@@ -248,7 +266,10 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Table Dropdown */}
         {showTableDropdown && currentRestaurant && (
-          <div className="absolute mt-2 w-64 bg-white rounded-lg shadow-lg border z-20">
+          <div 
+            ref={tableDropdownRef}
+            className="absolute mt-2 w-64 bg-white rounded-lg shadow-lg border z-20"
+          >
             {getAvailableTables().map((table) => (
               <button
                 key={table.id}
