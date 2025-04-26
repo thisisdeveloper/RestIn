@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, List, Map, Salad, Drumstick, UtensilsCrossed, ClipboardCheck, ChevronDown, Lock, Unlock } from 'lucide-react';
+import { Bell, List, Map, ClipboardCheck, ChevronDown, Lock, Unlock } from 'lucide-react';
 import useStore from '../store';
 import { DietaryFilter, Stall } from '../types';
 
@@ -19,8 +19,6 @@ const Header: React.FC<HeaderProps> = ({
     currentTable,
     notifications,
     orders,
-    dietaryFilter,
-    setDietaryFilter,
     setCurrentStall,
     setCurrentTable,
     lockTable,
@@ -53,25 +51,6 @@ const Header: React.FC<HeaderProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const dietaryFilterStyles: Record<DietaryFilter, string> = {
-    all: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
-    veg: 'bg-green-100 text-green-700 hover:bg-green-200',
-    nonveg: 'bg-red-100 text-red-700 hover:bg-red-200'
-  };
-
-  const DietaryIcon = {
-    all: UtensilsCrossed,
-    veg: Salad,
-    nonveg: Drumstick
-  }[dietaryFilter];
-
-  const cycleFilter = () => {
-    const filters: DietaryFilter[] = ['all', 'veg', 'nonveg'];
-    const currentIndex = filters.indexOf(dietaryFilter);
-    const nextIndex = (currentIndex + 1) % filters.length;
-    setDietaryFilter(filters[nextIndex]);
-  };
 
   const handleStallChange = (stall: Stall) => {
     setCurrentStall(stall.id);
@@ -201,14 +180,6 @@ const Header: React.FC<HeaderProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            <button
-              onClick={cycleFilter}
-              className={`relative p-2 rounded-full transition-colors ${dietaryFilterStyles[dietaryFilter]}`}
-              aria-label="Toggle dietary filter"
-            >
-              <DietaryIcon className="h-5 w-5" />
-            </button>
-
             {activeOrders > 0 && (
               <button
                 onClick={onOrderStatusClick}

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Home, ClipboardList, User, ShoppingCart } from 'lucide-react';
+import { Home, ClipboardList, User, ShoppingCart, UtensilsCrossed, Salad, Drumstick } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store';
+import { DietaryFilter } from '../types';
 
 interface BottomNavigationProps {
   onOrderHistoryClick: () => void;
@@ -13,8 +14,27 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onCartClick
 }) => {
   const navigate = useNavigate();
-  const { cart } = useStore();
+  const { cart, dietaryFilter, setDietaryFilter } = useStore();
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  const DietaryIcon = {
+    all: UtensilsCrossed,
+    veg: Salad,
+    nonveg: Drumstick
+  }[dietaryFilter];
+
+  const dietaryFilterStyles: Record<DietaryFilter, string> = {
+    all: 'text-gray-600',
+    veg: 'text-green-600',
+    nonveg: 'text-red-600'
+  };
+
+  const cycleFilter = () => {
+    const filters: DietaryFilter[] = ['all', 'veg', 'nonveg'];
+    const currentIndex = filters.indexOf(dietaryFilter);
+    const nextIndex = (currentIndex + 1) % filters.length;
+    setDietaryFilter(filters[nextIndex]);
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg safe-area-bottom z-50">
@@ -26,8 +46,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-600 relative"
             onClick={onCartClick}
+            className="flex flex-col items-center text-gray-600 relative"
           >
             <ShoppingCart className="w-6 h-6" />
             <span className="text-xs mt-1">Cart</span>
@@ -36,6 +56,14 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 {cartItemsCount}
               </span>
             )}
+          </button>
+          
+          <button
+            onClick={cycleFilter}
+            className={`flex flex-col items-center ${dietaryFilterStyles[dietaryFilter]}`}
+          >
+            <DietaryIcon className="w-6 h-6" />
+            <span className="text-xs mt-1 capitalize">{dietaryFilter === 'all' ? 'All' : dietaryFilter}</span>
           </button>
           
           <button 
