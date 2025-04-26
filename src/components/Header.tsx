@@ -56,8 +56,8 @@ const Header: React.FC<HeaderProps> = ({
     setDietaryFilter(filters[nextIndex]);
   };
 
-  const handleStallChange = (stallId: string) => {
-    setCurrentStall(stallId);
+  const handleStallChange = (stall: Stall) => {
+    setCurrentStall(stall.id);
     setShowStallDropdown(false);
   };
 
@@ -66,10 +66,9 @@ const Header: React.FC<HeaderProps> = ({
     setShowTableDropdown(false);
   };
 
-  const getCurrentStallName = () => {
+  const getCurrentStall = () => {
     if (!currentRestaurant?.stalls || !currentRestaurant.currentStallId) return null;
-    const currentStall = currentRestaurant.stalls.find(s => s.id === currentRestaurant.currentStallId);
-    return currentStall?.name;
+    return currentRestaurant.stalls.find(s => s.id === currentRestaurant.currentStallId);
   };
 
   const handleRestaurantClick = (e: React.MouseEvent) => {
@@ -79,6 +78,11 @@ const Header: React.FC<HeaderProps> = ({
     } else {
       onRestaurantClick();
     }
+  };
+
+  const handleStallImageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRestaurantClick();
   };
 
   const getAvailableTables = () => {
@@ -95,6 +99,8 @@ const Header: React.FC<HeaderProps> = ({
       lockTable(tableId);
     }
   };
+
+  const currentStall = getCurrentStall();
   
   return (
     <header className="bg-white shadow-md sticky top-0 z-10">
@@ -107,14 +113,24 @@ const Header: React.FC<HeaderProps> = ({
                 onClick={handleRestaurantClick}
               >
                 <img 
-                  src={currentRestaurant.logo} 
-                  alt={currentRestaurant.name}
-                  className="w-10 h-10 rounded-full object-cover mr-2" 
+                  src={currentRestaurant.venueType === 'foodCourt' && currentStall 
+                    ? currentStall.logo 
+                    : currentRestaurant.logo
+                  } 
+                  alt={currentRestaurant.venueType === 'foodCourt' && currentStall 
+                    ? currentStall.name 
+                    : currentRestaurant.name
+                  }
+                  className="w-10 h-10 rounded-full object-cover mr-2 cursor-pointer"
+                  onClick={handleStallImageClick}
                 />
                 <div>
                   <div className="flex items-center">
                     <h1 className="font-bold text-lg leading-tight">
-                      {currentRestaurant.venueType === 'foodCourt' ? getCurrentStallName() : currentRestaurant.name}
+                      {currentRestaurant.venueType === 'foodCourt' && currentStall 
+                        ? currentStall.name 
+                        : currentRestaurant.name
+                      }
                     </h1>
                     {currentRestaurant.venueType === 'foodCourt' && (
                       <button 
@@ -213,12 +229,13 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 key={stall.id}
                 className="w-full px-4 py-2 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg flex items-center"
-                onClick={() => handleStallChange(stall.id)}
+                onClick={() => handleStallChange(stall)}
               >
                 <img 
                   src={stall.logo} 
                   alt={stall.name}
-                  className="w-8 h-8 rounded-full object-cover mr-2" 
+                  className="w-8 h-8 rounded-full object-cover mr-2 cursor-pointer" 
+                  onClick={handleStallImageClick}
                 />
                 <div>
                   <div className="font-medium">{stall.name}</div>

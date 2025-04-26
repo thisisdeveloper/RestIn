@@ -14,15 +14,23 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ isVisible, onClos
 
   if (!isVisible || !currentRestaurant) return null;
 
+  const getCurrentStall = () => {
+    if (!currentRestaurant?.stalls || !currentRestaurant.currentStallId) return null;
+    return currentRestaurant.stalls.find(s => s.id === currentRestaurant.currentStallId);
+  };
+
+  const currentStall = getCurrentStall();
+  const displayMenu = currentRestaurant.venueType === 'foodCourt' ? currentStall?.menu : currentRestaurant.menu;
+
   // Calculate average rating from menu items
-  const ratedItems = currentRestaurant.menu.filter(item => item.rating !== undefined);
+  const ratedItems = displayMenu?.filter(item => item.rating !== undefined) || [];
   const averageRating = ratedItems.length
     ? ratedItems.reduce((sum, item) => sum + (item.rating || 0), 0) / ratedItems.length
     : 0;
   const totalReviews = ratedItems.reduce((sum, item) => sum + (item.ratingCount || 0), 0);
 
   // Get featured items
-  const featuredItems = currentRestaurant.menu.filter(item => item.featured);
+  const featuredItems = displayMenu?.filter(item => item.featured) || [];
 
   // Check if restaurant is currently open
   const isOpen = () => {
@@ -54,8 +62,8 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ isVisible, onClos
             {/* Header Image */}
             <div className="relative h-48 sm:h-64">
               <img
-                src={currentRestaurant.logo}
-                alt={currentRestaurant.name}
+                src={currentStall?.logo || currentRestaurant.logo}
+                alt={currentStall?.name || currentRestaurant.name}
                 className="w-full h-full object-cover"
               />
               <button
@@ -66,17 +74,22 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ isVisible, onClos
               </button>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                  {currentRestaurant.name}
+                  {currentStall?.name || currentRestaurant.name}
                 </h1>
+                {currentStall && (
+                  <p className="text-white text-opacity-90">
+                    {currentStall.cuisine} • {currentRestaurant.name}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Content */}
             <div className="p-4 sm:p-6">
               {/* Description */}
-              {currentRestaurant.description && (
+              {(currentStall?.description || currentRestaurant.description) && (
                 <p className="text-gray-600 mb-6 leading-relaxed">
-                  {currentRestaurant.description}
+                  {currentStall?.description || currentRestaurant.description}
                 </p>
               )}
 
@@ -91,7 +104,7 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ isVisible, onClos
                   <div className="flex items-center">
                     <Menu className="w-5 h-5 text-gray-600 mr-2" />
                     <span className="text-gray-600">
-                      {currentRestaurant.menu.length} Items Available
+                      {displayMenu?.length || 0} Items Available
                     </span>
                   </div>
                 </div>
@@ -126,47 +139,49 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ isVisible, onClos
               </div>
 
               {/* Featured Items */}
-              <div className="mb-8">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400 mr-2" />
-                  Featured Items
-                </h2>
-                <div className="grid grid-cols-1 gap-4">
-                  {featuredItems.map(item => (
-                    <div 
-                      key={item.id} 
-                      className="bg-gray-50 rounded-lg overflow-hidden flex flex-col sm:flex-row cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => handleItemClick(item.id)}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full sm:w-48 h-48 sm:h-32 object-cover"
-                      />
-                      <div className="p-4 flex-1">
-                        <h3 className="font-bold text-lg mb-1">{item.name}</h3>
-                        <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                          {item.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="ml-1 font-medium">{item.rating}</span>
-                            {item.ratingCount && (
-                              <span className="text-sm text-gray-500 ml-1">
-                                ({item.ratingCount})
-                              </span>
-                            )}
+              {featuredItems.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-bold mb-4 flex items-center">
+                    <Star className="w-5 h-5 text-yellow-400 fill-yellow-400 mr-2" />
+                    Featured Items
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    {featuredItems.map(item => (
+                      <div 
+                        key={item.id} 
+                        className="bg-gray-50 rounded-lg overflow-hidden flex flex-col sm:flex-row cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => handleItemClick(item.id)}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full sm:w-48 h-48 sm:h-32 object-cover"
+                        />
+                        <div className="p-4 flex-1">
+                          <h3 className="font-bold text-lg mb-1">{item.name}</h3>
+                          <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                            {item.description}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                              <span className="ml-1 font-medium">{item.rating}</span>
+                              {item.ratingCount && (
+                                <span className="text-sm text-gray-500 ml-1">
+                                  ({item.ratingCount})
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-lg font-bold text-indigo-600">
+                              ${item.price.toFixed(2)}
+                            </span>
                           </div>
-                          <span className="text-lg font-bold text-indigo-600">
-                            ${item.price.toFixed(2)}
-                          </span>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Recent Reviews */}
               <div>
@@ -217,9 +232,9 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ isVisible, onClos
       </div>
 
       {/* Item Detail Modal */}
-      {selectedItem && (
+      {selectedItem && displayMenu && (
         <MenuItemFullView
-          item={currentRestaurant.menu.find(item => item.id === selectedItem)!}
+          item={displayMenu.find(item => item.id === selectedItem)!}
           onClose={() => setSelectedItem(null)}
         />
       )}
