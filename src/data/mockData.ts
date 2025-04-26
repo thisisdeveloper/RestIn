@@ -63,14 +63,18 @@ export const generateMockFoodCourt = (): Restaurant => {
 export const mockRestaurant = generateMockRestaurant();
 export const mockFoodCourt = generateMockFoodCourt();
 
+// Example URL format: /scan?merchant=rest-1&table=table-1-qr
 // Simulated function to get restaurant data by ID
-export const getRestaurantById = (id: string): Promise<Restaurant> => {
+export const getRestaurantById = (id: string): Promise<Restaurant | null> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      if (id === 'fc-1') {
+      // Match exact restaurant ID
+      if (id === 'rest-1') {
+        resolve(mockRestaurant);
+      } else if (id === 'fc-1') {
         resolve(mockFoodCourt);
       } else {
-        resolve(mockRestaurant);
+        resolve(null);
       }
     }, 500);
   });
@@ -80,6 +84,7 @@ export const getRestaurantById = (id: string): Promise<Restaurant> => {
 export const getTableByQRCode = (qrCode: string): Promise<Table | null> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // Match exact table QR code format: table-{number}-qr
       const table = mockRestaurant.tables.find(table => table.qrCode === qrCode);
       resolve(table || null);
     }, 300);

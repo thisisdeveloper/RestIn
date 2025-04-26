@@ -3,10 +3,11 @@ import { Camera, X, ArrowLeft, LogIn, LogOut, Search, AlertCircle } from 'lucide
 import { Html5Qrcode } from 'html5-qrcode';
 import useStore from '../store';
 import { getRestaurantById, getTableByQRCode } from '../data/mockData';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const QRScanner: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
@@ -20,6 +21,15 @@ const QRScanner: React.FC = () => {
   } = useStore();
 
   useEffect(() => {
+    // Check URL parameters
+    const params = new URLSearchParams(location.search);
+    const merchantId = params.get('merchant');
+    const tableId = params.get('table');
+
+    if (merchantId && tableId) {
+      handleMerchantAndTable(merchantId, tableId);
+    }
+
     // Check for existing camera permission
     navigator.permissions.query({ name: 'camera' as PermissionName })
       .then(permissionStatus => {
@@ -36,7 +46,31 @@ const QRScanner: React.FC = () => {
         html5QrCode.stop().catch(error => console.error('Failed to stop QR scanner:', error));
       }
     };
-  }, []);
+  }, [location]);
+
+  const handleMerchantAndTable = async (merchantId: string, tableId: string) => {
+    try {
+      const restaurant = await getRestaurantById(merchantId);
+      if (!restaurant) {
+        setScanError('Restaurant not found. Please check if you are using the correct URL.');
+        return;
+      }
+
+      const table = await getTableByQRCode(tableId);
+      if (!table) {
+        setScanError('Table not found. This table may no longer be active.');
+        return;
+      }
+
+      setCurrentRestaurant(restaurant);
+      setCurrentTable(table);
+      setScanError(null);
+      navigate('/');
+    } catch (error) {
+      console.error('Error processing merchant and table:', error);
+      setScanError('An unexpected error occurred. Please try scanning again.');
+    }
+  };
 
   // New useEffect to handle scanner initialization after permission is granted
   useEffect(() => {
@@ -44,7 +78,13 @@ const QRScanner: React.FC = () => {
       const qrScanner = new Html5Qrcode('qr-reader');
       setHtml5QrCode(qrScanner);
       
-      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+      const config = { 
+        fps: 10, 
+        qrbox: { 
+          width: Math.min(window.innerWidth * 0.8, 250),
+          height: Math.min(window.innerWidth * 0.8, 250)
+        } 
+      };
       
       qrScanner.start(
         { facingMode: 'environment' },
@@ -153,6 +193,7 @@ const QRScanner: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
       <div className="bg-white shadow-md">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -189,7 +230,7 @@ const QRScanner: React.FC = () => {
         <div className="w-full max-w-md">
           {isScanning ? (
             <div className="relative">
-              <div id="qr-reader" className="w-full h-64 overflow-hidden rounded-lg bg-gray-100" />
+              <div id="qr-reader" className="w-full h-80 overflow-hidden rounded-lg bg-gray-100" />
               <button 
                 onClick={stopScanner}
                 className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md"
@@ -210,8 +251,8 @@ const QRScanner: React.FC = () => {
             </div>
           ) : (
             <div className="text-center">
-              <div className="w-48 h-48 bg-gray-100 flex items-center justify-center rounded-lg mx-auto mb-6">
-                <Camera className="w-16 h-16 text-gray-400" />
+              <div className="w-64 h-64 bg-gray-100 flex items-center justify-center rounded-lg mx-auto mb-6">
+                <Camera className="w-24 h-24 text-gray-400" />
               </div>
               
               <p className="text-gray-600 mb-8">
