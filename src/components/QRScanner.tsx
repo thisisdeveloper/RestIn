@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, X, ArrowLeft, LogIn, LogOut, Search } from 'lucide-react';
+import { Camera, X, ArrowLeft, LogIn, LogOut, Search, AlertCircle } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import useStore from '../store';
 import { getRestaurantById, getTableByQRCode } from '../data/mockData';
@@ -10,6 +10,7 @@ const QRScanner: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
+  const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   
   const { 
     setCurrentRestaurant, 
@@ -19,27 +20,33 @@ const QRScanner: React.FC = () => {
   } = useStore();
 
   useEffect(() => {
-    if (isScanning && !html5QrCode) {
-      const qrScanner = new Html5Qrcode('qr-reader');
-      setHtml5QrCode(qrScanner);
-    }
-    
+    // Check for existing camera permission
+    navigator.permissions.query({ name: 'camera' as PermissionName })
+      .then(permissionStatus => {
+        setCameraPermission(permissionStatus.state as 'granted' | 'denied' | 'prompt');
+        
+        // Listen for permission changes
+        permissionStatus.onchange = () => {
+          setCameraPermission(permissionStatus.state as 'granted' | 'denied' | 'prompt');
+        };
+      });
+
     return () => {
       if (html5QrCode?.isScanning) {
         html5QrCode.stop().catch(error => console.error('Failed to stop QR scanner:', error));
       }
     };
-  }, [isScanning, html5QrCode]);
+  }, []);
 
-  const startScanner = () => {
-    setIsScanning(true);
-    setScanError(null);
-    setStoreScanningState(true);
-    
-    if (html5QrCode) {
+  // New useEffect to handle scanner initialization after permission is granted
+  useEffect(() => {
+    if (cameraPermission === 'granted' && isScanning) {
+      const qrScanner = new Html5Qrcode('qr-reader');
+      setHtml5QrCode(qrScanner);
+      
       const config = { fps: 10, qrbox: { width: 250, height: 250 } };
       
-      html5QrCode.start(
+      qrScanner.start(
         { facingMode: 'environment' },
         config,
         onScanSuccess,
@@ -50,6 +57,21 @@ const QRScanner: React.FC = () => {
         setIsScanning(false);
         setStoreScanningState(false);
       });
+    }
+  }, [cameraPermission, isScanning]);
+
+  const requestCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach(track => track.stop()); // Stop the stream immediately
+      setCameraPermission('granted');
+      setIsScanning(true);
+      setStoreScanningState(true);
+      setScanError(null);
+    } catch (error) {
+      console.error('Camera permission denied:', error);
+      setCameraPermission('denied');
+      setScanError('Camera access denied. Please enable camera access in your browser settings.');
     }
   };
 
@@ -63,32 +85,47 @@ const QRScanner: React.FC = () => {
 
   const onScanSuccess = async (decodedText: string) => {
     try {
+      // First validate QR code format
+      if (!decodedText.includes(':')) {
+        setScanError('Invalid QR code format. Please scan a valid restaurant QR code.');
+        return;
+      }
+
       const [restaurantId, tableQrCode] = decodedText.split(':');
       
       if (!restaurantId || !tableQrCode) {
-        throw new Error('Invalid QR code format');
+        setScanError('Invalid QR code format. The QR code is missing required information.');
+        return;
       }
       
       const restaurant = await getRestaurantById(restaurantId);
+      if (!restaurant) {
+        setScanError('Restaurant not found. Please check if you are scanning the correct QR code.');
+        return;
+      }
+
       const table = await getTableByQRCode(tableQrCode);
-      
-      if (!restaurant || !table) {
-        throw new Error('Restaurant or table not found');
+      if (!table) {
+        setScanError('Table not found. This table may no longer be active.');
+        return;
       }
       
+      // If we get here, both restaurant and table were found
       setCurrentRestaurant(restaurant);
       setCurrentTable(table);
+      setScanError(null);
       stopScanner();
       navigate('/');
       
     } catch (error) {
       console.error('Error processing QR code:', error);
-      setScanError('Invalid QR code or restaurant/table not found. Please try again.');
+      setScanError('An unexpected error occurred. Please try scanning again.');
     }
   };
 
   const onScanFailure = (error: string) => {
-    if (error !== 'No QR code found') {
+    // Only log errors that are not related to QR code detection
+    if (!error.includes('No QR code found') && !error.includes('NotFoundException')) {
       console.error('QR scan error:', error);
     }
   };
@@ -162,8 +199,12 @@ const QRScanner: React.FC = () => {
               </button>
               
               {scanError && (
-                <div className="mt-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">
-                  {scanError}
+                <div className="mt-4 p-4 bg-red-100 text-red-800 rounded-md flex items-start">
+                  <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium">Scanning Error</p>
+                    <p className="text-sm mt-1">{scanError}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -177,12 +218,28 @@ const QRScanner: React.FC = () => {
                 Scan the QR code on your table to start ordering
               </p>
               
-              <button
-                onClick={startScanner}
-                className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium shadow-sm hover:bg-indigo-700 transition-colors mb-4"
-              >
-                Start Scanning
-              </button>
+              {cameraPermission === 'denied' ? (
+                <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-md flex items-start">
+                  <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+                  <div className="text-left">
+                    <p className="font-medium">Camera Access Required</p>
+                    <p className="text-sm mt-1">
+                      Please enable camera access in your browser settings to scan QR codes.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={cameraPermission === 'granted' ? () => {
+                    setIsScanning(true);
+                    setStoreScanningState(true);
+                    setScanError(null);
+                  } : requestCameraPermission}
+                  className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium shadow-sm hover:bg-indigo-700 transition-colors mb-4"
+                >
+                  {cameraPermission === 'prompt' ? 'Allow Camera & Start Scanning' : 'Start Scanning'}
+                </button>
+              )}
 
               <button
                 onClick={() => navigate('/search')}
