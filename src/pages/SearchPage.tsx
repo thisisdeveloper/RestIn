@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeft, Search, MapPin, Navigation, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Restaurant } from '../types';
+import useStore from '../store';
 
-// Mock data for locations
 const countries = [
   { code: 'US', name: 'United States' },
   { code: 'UK', name: 'United Kingdom' },
@@ -25,10 +25,8 @@ const citiesByState: Record<string, string[]> = {
   'California': ['Los Angeles', 'San Francisco', 'San Diego', 'Sacramento'],
   'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
   'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore'],
-  // Add more cities for other states as needed
 };
 
-// Mock data for demonstration
 const mockRestaurants: Restaurant[] = [
   {
     id: 'rest-1',
@@ -42,7 +40,10 @@ const mockRestaurants: Restaurant[] = [
       address: '123 Main St, New York, NY 10001',
       coordinates: { lat: 40.7128, lng: -74.0060 }
     },
-    tables: [],
+    tables: [
+      { id: 'table-1', number: 1, seats: 4, qrCode: 'table-1-qr' },
+      { id: 'table-2', number: 2, seats: 4, qrCode: 'table-2-qr' }
+    ],
     menu: []
   },
   {
@@ -57,7 +58,10 @@ const mockRestaurants: Restaurant[] = [
       address: '456 Oak St, Mumbai, Maharashtra 400001',
       coordinates: { lat: 19.0760, lng: 72.8777 }
     },
-    tables: [],
+    tables: [
+      { id: 'table-1', number: 1, seats: 4, qrCode: 'table-1-qr' },
+      { id: 'table-2', number: 2, seats: 4, qrCode: 'table-2-qr' }
+    ],
     menu: []
   },
   {
@@ -72,7 +76,10 @@ const mockRestaurants: Restaurant[] = [
       address: '789 Pine St, San Francisco, CA 94101',
       coordinates: { lat: 37.7749, lng: -122.4194 }
     },
-    tables: [],
+    tables: [
+      { id: 'table-1', number: 1, seats: 4, qrCode: 'table-1-qr' },
+      { id: 'table-2', number: 2, seats: 4, qrCode: 'table-2-qr' }
+    ],
     menu: []
   }
 ];
@@ -86,6 +93,7 @@ interface Location {
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
+  const { setCurrentRestaurant, setCurrentTable } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showLocationFilter, setShowLocationFilter] = useState(false);
   const [location, setLocation] = useState<Location>({
@@ -132,13 +140,14 @@ const SearchPage: React.FC = () => {
   };
 
   const handleRestaurantSelect = (restaurant: Restaurant) => {
-    // In a real app, you would fetch the full restaurant data here
+    setCurrentRestaurant(restaurant);
+    // Set a default table for demonstration
+    setCurrentTable(restaurant.tables[0]);
     navigate('/');
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow-md sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center">
@@ -154,7 +163,6 @@ const SearchPage: React.FC = () => {
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Location Filter Toggle */}
         <button
           onClick={() => setShowLocationFilter(!showLocationFilter)}
           className="w-full mb-4 py-3 px-4 bg-white rounded-xl border border-gray-300 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -166,11 +174,22 @@ const SearchPage: React.FC = () => {
           {showLocationFilter ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </button>
 
-        {/* Location Filters */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search restaurants..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
         {showLocationFilter && (
           <div className="bg-white p-4 rounded-xl shadow-sm mb-4 animate-fade-in">
             <div className="space-y-4">
-              {/* Country Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Country
@@ -189,7 +208,6 @@ const SearchPage: React.FC = () => {
                 </select>
               </div>
 
-              {/* State Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   State
@@ -209,7 +227,6 @@ const SearchPage: React.FC = () => {
                 </select>
               </div>
 
-              {/* City Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   City
@@ -229,7 +246,6 @@ const SearchPage: React.FC = () => {
                 </select>
               </div>
 
-              {/* Pincode Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Pincode (Optional)
@@ -246,21 +262,6 @@ const SearchPage: React.FC = () => {
           </div>
         )}
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search restaurants..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        {/* Results */}
         <div className="space-y-4">
           {filteredRestaurants.map(restaurant => (
             <div
