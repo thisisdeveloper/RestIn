@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BellRing, X, MessageSquare, Send } from 'lucide-react';
+import { BellRing, X, MessageSquare, Phone } from 'lucide-react';
 
 interface CallWaiterProps {
   tableNumber: number;
@@ -14,13 +14,15 @@ const CallWaiter: React.FC<CallWaiterProps> = ({ tableNumber }) => {
   const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
   const handleCall = () => {
+    if (!isExpanded) {
+      setIsExpanded(true);
+      return;
+    }
+
     if (isCalled) {
-      // If already called, cancel the call
       handleCancel();
     } else {
-      // Start new call
       setIsCalled(true);
-      setIsExpanded(true);
       setTimer(0);
       const interval = setInterval(() => {
         setTimer(prev => {
@@ -50,8 +52,6 @@ const CallWaiter: React.FC<CallWaiterProps> = ({ tableNumber }) => {
       setTimerInterval(null);
     }
     setIsCalled(false);
-    setIsExpanded(false);
-    setShowMessageInput(false);
     setTimer(0);
   };
 
@@ -66,7 +66,7 @@ const CallWaiter: React.FC<CallWaiterProps> = ({ tableNumber }) => {
       {isExpanded && (
         <div className="bg-white rounded-lg shadow-lg p-4 animate-fade-in min-w-[250px]">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-medium">Waiter Called</span>
+            <span className="font-medium">Call Waiter</span>
             <button 
               onClick={() => setIsExpanded(false)}
               className="p-1 hover:bg-gray-100 rounded-full"
@@ -79,55 +79,65 @@ const CallWaiter: React.FC<CallWaiterProps> = ({ tableNumber }) => {
             Table #{tableNumber}
           </p>
           
+          {/* Call Status */}
           {isCalled && (
             <div className="text-sm text-gray-500 mb-3">
               Waiting time: {formatTime(timer)}
             </div>
           )}
 
-          {showMessageInput ? (
-            <div className="space-y-2">
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message here..."
-                className="w-full p-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                rows={3}
-              />
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => setShowMessageInput(false)}
-                  className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!message.trim()}
-                  className="px-3 py-1 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                >
-                  <Send className="w-4 h-4 mr-1" />
-                  Send
-                </button>
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {/* Call Button */}
+            <button
+              onClick={handleCall}
+              className={`w-full flex items-center justify-center px-3 py-2 rounded-lg transition-colors ${
+                isCalled 
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+              }`}
+            >
+              <Phone className="w-4 h-4 mr-2" />
+              {isCalled ? 'Cancel Call' : 'Call Waiter'}
+            </button>
+
+            {/* Message Section */}
+            {showMessageInput ? (
+              <div className="space-y-2">
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Type your message here..."
+                  className="w-full p-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  rows={3}
+                />
+                <div className="flex justify-end space-x-2">
+                  <button
+                    onClick={() => setShowMessageInput(false)}
+                    className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!message.trim()}
+                    className="px-3 py-1 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-1" />
+                    Send
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex space-x-2">
-              <button
-                onClick={handleCancel}
-                className="flex-1 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Cancel Call
-              </button>
+            ) : (
               <button
                 onClick={() => setShowMessageInput(true)}
-                className="flex-1 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center"
+                className="w-full flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200"
               >
-                <MessageSquare className="w-4 h-4 mr-1" />
-                Message
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Send Message
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 

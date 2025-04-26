@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Search, MessageSquare, Phone, Mail, ChevronRight, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Search, MessageSquare, Phone, Mail, ChevronRight, ExternalLink, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface FAQItem {
@@ -40,6 +40,7 @@ const SupportPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFAQ, setSelectedFAQ] = useState<string | null>(null);
+  const [showContactOptions, setShowContactOptions] = useState(false);
 
   const filteredFAQs = faqs.filter(faq =>
     faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -57,7 +58,7 @@ const SupportPage: React.FC = () => {
       icon: <Phone className="w-5 h-5" />,
       title: 'Phone',
       description: '+1 (234) 567-8900',
-      action: 'Call Now'
+      action: 'Contact'
     },
     {
       icon: <Mail className="w-5 h-5" />,
@@ -66,6 +67,69 @@ const SupportPage: React.FC = () => {
       action: 'Send Email'
     }
   ];
+
+  const handleContactClick = (method: string) => {
+    if (method === 'Phone') {
+      setShowContactOptions(true);
+    } else if (method === 'Live Chat') {
+      // Handle live chat
+      console.log('Starting live chat...');
+    } else if (method === 'Email') {
+      window.location.href = 'mailto:support@restaurant.com';
+    }
+  };
+
+  const ContactOptionsModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl w-full max-w-sm p-6 animate-fade-in">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold">Contact Support</h3>
+          <button
+            onClick={() => setShowContactOptions(false)}
+            className="p-1 hover:bg-gray-100 rounded-full"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          <button
+            onClick={() => {
+              window.location.href = 'tel:+12345678900';
+              setShowContactOptions(false);
+            }}
+            className="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+          >
+            <div className="flex items-center">
+              <Phone className="w-5 h-5 text-indigo-600 mr-3" />
+              <div className="text-left">
+                <div className="font-medium">Call Now</div>
+                <div className="text-sm text-gray-600">Speak with support directly</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+
+          <button
+            onClick={() => {
+              window.location.href = 'sms:+12345678900';
+              setShowContactOptions(false);
+            }}
+            className="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+          >
+            <div className="flex items-center">
+              <MessageSquare className="w-5 h-5 text-indigo-600 mr-3" />
+              <div className="text-left">
+                <div className="font-medium">Send Message</div>
+                <div className="text-sm text-gray-600">Text with our support team</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,7 +178,10 @@ const SupportPage: React.FC = () => {
                   <h3 className="font-medium">{method.title}</h3>
                   <p className="text-sm text-gray-500">{method.description}</p>
                 </div>
-                <button className="flex items-center text-indigo-600 font-medium">
+                <button
+                  onClick={() => handleContactClick(method.title)}
+                  className="flex items-center text-indigo-600 font-medium"
+                >
                   {method.action}
                   <ExternalLink className="w-4 h-4 ml-1" />
                 </button>
@@ -152,6 +219,9 @@ const SupportPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Contact Options Modal */}
+      {showContactOptions && <ContactOptionsModal />}
     </div>
   );
 };
