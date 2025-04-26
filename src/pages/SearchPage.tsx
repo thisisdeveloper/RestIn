@@ -3,6 +3,7 @@ import { ArrowLeft, Search, MapPin, Navigation, ChevronDown, ChevronUp } from 'l
 import { useNavigate } from 'react-router-dom';
 import { Restaurant } from '../types';
 import useStore from '../store';
+import { mockRestaurant } from '../data/mockData';
 
 const countries = [
   { code: 'US', name: 'United States' },
@@ -24,28 +25,27 @@ const citiesByState: Record<string, string[]> = {
   'New York': ['New York City', 'Buffalo', 'Rochester', 'Syracuse'],
   'California': ['Los Angeles', 'San Francisco', 'San Diego', 'Sacramento'],
   'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
-  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore'],
+  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore']
+};
+
+interface Location {
+  country: string;
+  state: string;
+  city: string;
+  pincode?: string;
+}
+
+const generateMockTables = (): Table[] => {
+  return Array.from({ length: 10 }, (_, i) => ({
+    id: `table-${i + 1}`,
+    number: i + 1,
+    seats: 4 + (i % 2) * 2,
+    qrCode: `table-${i + 1}-qr`
+  }));
 };
 
 const mockRestaurants: Restaurant[] = [
-  {
-    id: 'rest-1',
-    name: 'Gourmet Delight',
-    description: 'Fine dining restaurant with a modern twist',
-    logo: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800',
-    location: {
-      country: 'US',
-      state: 'New York',
-      city: 'New York City',
-      address: '123 Main St, New York, NY 10001',
-      coordinates: { lat: 40.7128, lng: -74.0060 }
-    },
-    tables: [
-      { id: 'table-1', number: 1, seats: 4, qrCode: 'table-1-qr' },
-      { id: 'table-2', number: 2, seats: 4, qrCode: 'table-2-qr' }
-    ],
-    menu: []
-  },
+  mockRestaurant,
   {
     id: 'rest-2',
     name: 'Spice Garden',
@@ -58,10 +58,7 @@ const mockRestaurants: Restaurant[] = [
       address: '456 Oak St, Mumbai, Maharashtra 400001',
       coordinates: { lat: 19.0760, lng: 72.8777 }
     },
-    tables: [
-      { id: 'table-1', number: 1, seats: 4, qrCode: 'table-1-qr' },
-      { id: 'table-2', number: 2, seats: 4, qrCode: 'table-2-qr' }
-    ],
+    tables: generateMockTables(),
     menu: []
   },
   {
@@ -76,20 +73,10 @@ const mockRestaurants: Restaurant[] = [
       address: '789 Pine St, San Francisco, CA 94101',
       coordinates: { lat: 37.7749, lng: -122.4194 }
     },
-    tables: [
-      { id: 'table-1', number: 1, seats: 4, qrCode: 'table-1-qr' },
-      { id: 'table-2', number: 2, seats: 4, qrCode: 'table-2-qr' }
-    ],
+    tables: generateMockTables(),
     menu: []
   }
 ];
-
-interface Location {
-  country: string;
-  state: string;
-  city: string;
-  pincode?: string;
-}
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -141,7 +128,6 @@ const SearchPage: React.FC = () => {
 
   const handleRestaurantSelect = (restaurant: Restaurant) => {
     setCurrentRestaurant(restaurant);
-    // Set a default table for demonstration
     setCurrentTable(restaurant.tables[0]);
     navigate('/');
   };

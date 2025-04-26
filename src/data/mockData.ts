@@ -32,7 +32,7 @@ const generateMockReviews = (itemId: string): Review[] => {
 };
 
 // Generate mock menu items
-const generateMockMenuItems = (): MenuItem[] => {
+export const generateMockMenuItems = (): MenuItem[] => {
   return [
     {
       id: 'v1',
