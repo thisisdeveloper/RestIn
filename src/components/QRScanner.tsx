@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Camera, X, ArrowLeft, LogIn, LogOut, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import useStore from '../store';
@@ -10,9 +10,10 @@ const QRScanner: React.FC = () => {
   const location = useLocation();
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
-  const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
   const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const mountedRef = useRef(true);
   
   const { 
     setCurrentRestaurant, 
@@ -22,6 +23,8 @@ const QRScanner: React.FC = () => {
   } = useStore();
 
   useEffect(() => {
+    mountedRef.current = true;
+
     const params = new URLSearchParams(location.search);
     const merchantId = params.get('merchant');
     const tableId = params.get('table');
@@ -33,14 +36,19 @@ const QRScanner: React.FC = () => {
 
     navigator.permissions.query({ name: 'camera' as PermissionName })
       .then(permissionStatus => {
-        setCameraPermission(permissionStatus.state as 'granted' | 'denied' | 'prompt');
-        
-        permissionStatus.onchange = () => {
+        if (mountedRef.current) {
           setCameraPermission(permissionStatus.state as 'granted' | 'denied' | 'prompt');
-        };
+          
+          permissionStatus.onchange = () => {
+            if (mountedRef.current) {
+              setCameraPermission(permissionStatus.state as 'granted' | 'denied' | 'prompt');
+            }
+          };
+        }
       });
 
     return () => {
+      mountedRef.current = false;
       stopScanner();
     };
   }, [location]);
@@ -79,8 +87,8 @@ const QRScanner: React.FC = () => {
         }
       }
 
-      // Stop scanning and camera after successful scan
-      stopScanner();
+      // Stop scanning and camera before navigation
+      await stopScanner();
       setScanError(null);
       navigate('/');
     } catch (error) {
@@ -90,18 +98,29 @@ const QRScanner: React.FC = () => {
     }
   };
 
-  const stopScanner = () => {
-    if (html5QrCode?.isScanning) {
-      html5QrCode.stop().catch(error => console.error('Failed to stop QR scanner:', error));
+  const stopScanner = async () => {
+    try {
+      if (scannerRef.current) {
+        if (scannerRef.current.isScanning) {
+          await scannerRef.current.stop();
+        }
+        await scannerRef.current.clear();
+        scannerRef.current = null;
+      }
+    } catch (error) {
+      console.error('Failed to stop QR scanner:', error);
+    } finally {
+      if (mountedRef.current) {
+        setIsScanning(false);
+        setStoreScanningState(false);
+      }
     }
-    setIsScanning(false);
-    setStoreScanningState(false);
   };
 
   useEffect(() => {
     if (cameraPermission === 'granted' && isScanning) {
       const qrScanner = new Html5Qrcode('qr-reader');
-      setHtml5QrCode(qrScanner);
+      scannerRef.current = qrScanner;
       
       const config = { 
         fps: 10, 
@@ -120,9 +139,15 @@ const QRScanner: React.FC = () => {
         console.error('Failed to start QR scanner:', error);
         setDebugInfo(prev => `${prev}\nScanner Error: ${error}`);
         setScanError('Could not access camera. Please check permissions.');
-        setIsScanning(false);
-        setStoreScanningState(false);
+        if (mountedRef.current) {
+          setIsScanning(false);
+          setStoreScanningState(false);
+        }
       });
+
+      return () => {
+        stopScanner();
+      };
     }
   }, [cameraPermission, isScanning]);
 
@@ -130,14 +155,18 @@ const QRScanner: React.FC = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       stream.getTracks().forEach(track => track.stop());
-      setCameraPermission('granted');
-      setIsScanning(true);
-      setStoreScanningState(true);
-      setScanError(null);
+      if (mountedRef.current) {
+        setCameraPermission('granted');
+        setIsScanning(true);
+        setStoreScanningState(true);
+        setScanError(null);
+      }
     } catch (error) {
       console.error('Camera permission denied:', error);
-      setCameraPermission('denied');
-      setScanError('Camera access denied. Please enable camera access in your browser settings.');
+      if (mountedRef.current) {
+        setCameraPermission('denied');
+        setScanError('Camera access denied. Please enable camera access in your browser settings.');
+      }
     }
   };
 
@@ -145,6 +174,9 @@ const QRScanner: React.FC = () => {
     try {
       console.log('Scanned QR content:', decodedText);
       setDebugInfo(`Scanned content: ${decodedText}`);
+
+      // Stop the scanner immediately after a successful scan
+      await stopScanner();
 
       // Handle URL format
       if (decodedText.includes('http')) {
