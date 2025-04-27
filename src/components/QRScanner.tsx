@@ -62,7 +62,7 @@ const QRScanner: React.FC = () => {
       console.log('Restaurant result:', restaurant);
       
       if (!restaurant) {
-        const error = 'Restaurant not found. Please check if you are using the correct URL.';
+        const error = 'Restaurant not found. Please check if you are scanning the correct QR code or try searching for the restaurant instead.';
         console.error(error);
         setDebugInfo(prev => `${prev}\nError: Restaurant not found`);
         setScanError(error);
@@ -237,6 +237,36 @@ const QRScanner: React.FC = () => {
     setStoreScanningState(true);
   };
 
+  // Error message component
+  const ErrorMessage = ({ error }: { error: string }) => (
+    <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-100">
+      <div className="flex items-start">
+        <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <h3 className="text-red-800 font-medium mb-1">Unable to Process QR Code</h3>
+          <div className="text-red-700 text-sm whitespace-pre-line">{error}</div>
+          
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={retryScanning}
+              className="flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate('/search')}
+              className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Search Instead
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
@@ -274,6 +304,11 @@ const QRScanner: React.FC = () => {
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
+          {/* Show error message even when not scanning */}
+          {scanError && !isScanning && (
+            <ErrorMessage error={scanError} />
+          )}
+          
           {isScanning ? (
             <div className="relative">
               <div id="qr-reader" className="w-full h-96 overflow-hidden rounded-lg bg-gray-100" />
@@ -285,36 +320,10 @@ const QRScanner: React.FC = () => {
                 <X className="w-5 h-5 text-gray-700" />
               </button>
               
-              {scanError && (
-                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-100">
-                  <div className="flex items-start">
-                    <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <h3 className="text-red-800 font-medium mb-1">Unable to Process QR Code</h3>
-                      <div className="text-red-700 text-sm whitespace-pre-line">{scanError}</div>
-                      
-                      <div className="mt-4 flex gap-3">
-                        <button
-                          onClick={retryScanning}
-                          className="flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
-                        >
-                          <RefreshCw className="w-4 h-4 mr-2" />
-                          Try Again
-                        </button>
-                        <button
-                          onClick={() => navigate('/search')}
-                          className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-                        >
-                          <Search className="w-4 h-4 mr-2" />
-                          Search Instead
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Show error message while scanning */}
+              {scanError && <ErrorMessage error={scanError} />}
             </div>
-          ) : (
+          ) : !scanError && (
             <div className="text-center">
               <div className="w-64 h-64 bg-gray-100 flex items-center justify-center rounded-lg mx-auto mb-6">
                 <Camera className="w-24 h-24 text-gray-400" />
