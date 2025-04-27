@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Minus, Clock, Star } from 'lucide-react';
 import { MenuItem } from '../types';
 import useStore from '../store';
@@ -25,11 +25,20 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({ item }) => {
   
   const itemInCart = cart.find(cartItem => cartItem.id === item.id);
   const isInCart = !!itemInCart;
+
+  // Initialize quantity and special instructions from cart data
+  useEffect(() => {
+    if (itemInCart) {
+      setQuantity(itemInCart.quantity);
+      setSpecialInstructions(itemInCart.specialInstructions || '');
+    } else {
+      setQuantity(1);
+      setSpecialInstructions('');
+    }
+  }, [itemInCart]);
   
   const handleAddToCart = () => {
     addToCart(item, quantity, specialInstructions);
-    setQuantity(1);
-    setSpecialInstructions('');
     setIsExpanded(false);
   };
   

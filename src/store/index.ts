@@ -65,7 +65,7 @@ const useStore = create<AppState>((set) => ({
         const updatedCart = [...state.cart];
         updatedCart[existingItemIndex] = {
           ...updatedCart[existingItemIndex],
-          quantity: updatedCart[existingItemIndex].quantity + quantity,
+          quantity, // Replace the quantity instead of adding
           specialInstructions: specialInstructions || updatedCart[existingItemIndex].specialInstructions
         };
         return { cart: updatedCart };
