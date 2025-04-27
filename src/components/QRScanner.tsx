@@ -63,7 +63,8 @@ const QRScanner: React.FC = () => {
       
       if (!restaurant) {
         const error = 'Restaurant not found. Please check if you are scanning the correct QR code or try searching for the restaurant instead.';
-        console.error(error);
+        // console.error(error);
+        console.log(error);
         setDebugInfo(prev => `${prev}\nError: Restaurant not found`);
         setScanError(error);
         return;
