@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, X, ArrowLeft, LogIn, LogOut, Search, AlertCircle } from 'lucide-react';
+import { Camera, X, ArrowLeft, LogIn, LogOut, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import useStore from '../store';
 import { getRestaurantById, getTableByQRCode } from '../data/mockData';
@@ -12,6 +12,7 @@ const QRScanner: React.FC = () => {
   const [scanError, setScanError] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
   const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+  const [debugInfo, setDebugInfo] = useState<string>('');
   
   const { 
     setCurrentRestaurant, 
@@ -21,21 +22,19 @@ const QRScanner: React.FC = () => {
   } = useStore();
 
   useEffect(() => {
-    // Check URL parameters
     const params = new URLSearchParams(location.search);
     const merchantId = params.get('merchant');
     const tableId = params.get('table');
 
-    if (merchantId && tableId) {
-      handleMerchantAndTable(merchantId, tableId);
+    if (merchantId) {
+      console.log('URL Parameters:', { merchantId, tableId });
+      handleMerchantAndTable(merchantId, tableId || null);
     }
 
-    // Check for existing camera permission
     navigator.permissions.query({ name: 'camera' as PermissionName })
       .then(permissionStatus => {
         setCameraPermission(permissionStatus.state as 'granted' | 'denied' | 'prompt');
         
-        // Listen for permission changes
         permissionStatus.onchange = () => {
           setCameraPermission(permissionStatus.state as 'granted' | 'denied' | 'prompt');
         };
@@ -48,31 +47,42 @@ const QRScanner: React.FC = () => {
     };
   }, [location]);
 
-  const handleMerchantAndTable = async (merchantId: string, tableId: string) => {
+  const handleMerchantAndTable = async (merchantId: string, tableId: string | null) => {
     try {
+      console.log('Processing merchant and table:', { merchantId, tableId });
+      setDebugInfo(`Processing: merchant=${merchantId}, table=${tableId}`);
+
       const restaurant = await getRestaurantById(merchantId);
+      console.log('Restaurant result:', restaurant);
+      
       if (!restaurant) {
-        setScanError('Restaurant not found. Please check if you are using the correct URL.');
+        const error = 'Restaurant not found. Please check if you are using the correct URL.';
+        console.error(error);
+        setDebugInfo(prev => `${prev}\nError: Restaurant not found`);
+        setScanError(error);
         return;
       }
 
-      const table = await getTableByQRCode(tableId);
-      if (!table) {
-        setScanError('Table not found. This table may no longer be active.');
-        return;
+      let table = null;
+      if (tableId) {
+        table = await getTableByQRCode(tableId);
+        console.log('Table result:', table);
       }
 
+      setDebugInfo(prev => `${prev}\nSuccess: Found restaurant${table ? ' and table' : ''}`);
       setCurrentRestaurant(restaurant);
-      setCurrentTable(table);
+      if (table) {
+        setCurrentTable(table);
+      }
       setScanError(null);
       navigate('/');
     } catch (error) {
       console.error('Error processing merchant and table:', error);
+      setDebugInfo(prev => `${prev}\nError: ${error}`);
       setScanError('An unexpected error occurred. Please try scanning again.');
     }
   };
 
-  // New useEffect to handle scanner initialization after permission is granted
   useEffect(() => {
     if (cameraPermission === 'granted' && isScanning) {
       const qrScanner = new Html5Qrcode('qr-reader');
@@ -81,8 +91,8 @@ const QRScanner: React.FC = () => {
       const config = { 
         fps: 10, 
         qrbox: { 
-          width: Math.min(window.innerWidth * 0.8, 250),
-          height: Math.min(window.innerWidth * 0.8, 250)
+          width: Math.min(window.innerWidth * 0.9, 300),
+          height: Math.min(window.innerWidth * 0.9, 300)
         } 
       };
       
@@ -93,6 +103,7 @@ const QRScanner: React.FC = () => {
         onScanFailure
       ).catch(error => {
         console.error('Failed to start QR scanner:', error);
+        setDebugInfo(prev => `${prev}\nScanner Error: ${error}`);
         setScanError('Could not access camera. Please check permissions.');
         setIsScanning(false);
         setStoreScanningState(false);
@@ -103,7 +114,7 @@ const QRScanner: React.FC = () => {
   const requestCameraPermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach(track => track.stop()); // Stop the stream immediately
+      stream.getTracks().forEach(track => track.stop());
       setCameraPermission('granted');
       setIsScanning(true);
       setStoreScanningState(true);
@@ -125,70 +136,66 @@ const QRScanner: React.FC = () => {
 
   const onScanSuccess = async (decodedText: string) => {
     try {
-      // First validate QR code format
-      if (!decodedText.includes(':')) {
+      console.log('Scanned QR content:', decodedText);
+      setDebugInfo(`Scanned content: ${decodedText}`);
+
+      // Handle URL format
+      if (decodedText.includes('http')) {
+        try {
+          const url = new URL(decodedText);
+          const merchantId = url.searchParams.get('merchant');
+          const tableId = url.searchParams.get('table');
+          
+          if (merchantId) {
+            await handleMerchantAndTable(merchantId, tableId);
+            return;
+          }
+        } catch (error) {
+          console.error('Invalid URL format:', error);
+        }
+      }
+
+      // Handle direct format (rest-1:table-1-qr)
+      if (decodedText.includes(':')) {
+        const [restaurantId, tableQrCode] = decodedText.split(':');
+        console.log('Parsed content:', { restaurantId, tableQrCode });
+        
+        if (!restaurantId) {
+          setScanError('Invalid QR code format. Please scan a QR code from a restaurant table.');
+          return;
+        }
+        
+        await handleMerchantAndTable(restaurantId, tableQrCode || null);
+      } else {
         setScanError('Invalid QR code format. Please scan a valid restaurant QR code.');
-        return;
       }
-
-      const [restaurantId, tableQrCode] = decodedText.split(':');
-      
-      if (!restaurantId || !tableQrCode) {
-        setScanError('Invalid QR code format. The QR code is missing required information.');
-        return;
-      }
-      
-      const restaurant = await getRestaurantById(restaurantId);
-      if (!restaurant) {
-        setScanError('Restaurant not found. Please check if you are scanning the correct QR code.');
-        return;
-      }
-
-      const table = await getTableByQRCode(tableQrCode);
-      if (!table) {
-        setScanError('Table not found. This table may no longer be active.');
-        return;
-      }
-      
-      // If we get here, both restaurant and table were found
-      setCurrentRestaurant(restaurant);
-      setCurrentTable(table);
-      setScanError(null);
-      stopScanner();
-      navigate('/');
-      
     } catch (error) {
       console.error('Error processing QR code:', error);
-      setScanError('An unexpected error occurred. Please try scanning again.');
+      setDebugInfo(prev => `${prev}\nError: ${error}`);
+      setScanError('Something went wrong while processing the QR code. Please try scanning again.');
     }
   };
 
   const onScanFailure = (error: string) => {
-    // Only log errors that are not related to QR code detection
     if (!error.includes('No QR code found') && !error.includes('NotFoundException')) {
       console.error('QR scan error:', error);
-    }
-  };
-  
-  const simulateScan = async () => {
-    const restaurant = await getRestaurantById('rest-1');
-    const table = await getTableByQRCode('table-1-qr');
-    
-    if (restaurant && table) {
-      setCurrentRestaurant(restaurant);
-      setCurrentTable(table);
-      stopScanner();
-      navigate('/');
+      setDebugInfo(prev => `${prev}\nScan error: ${error}`);
     }
   };
 
   const handleAuthClick = () => {
     if (isLoggedIn) {
-      // Handle logout
       navigate('/');
     } else {
       navigate('/auth');
     }
+  };
+
+  const retryScanning = () => {
+    setScanError(null);
+    setDebugInfo('');
+    setIsScanning(true);
+    setStoreScanningState(true);
   };
 
   return (
@@ -230,7 +237,7 @@ const QRScanner: React.FC = () => {
         <div className="w-full max-w-md">
           {isScanning ? (
             <div className="relative">
-              <div id="qr-reader" className="w-full h-80 overflow-hidden rounded-lg bg-gray-100" />
+              <div id="qr-reader" className="w-full h-96 overflow-hidden rounded-lg bg-gray-100" />
               <button 
                 onClick={stopScanner}
                 className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md"
@@ -240,11 +247,30 @@ const QRScanner: React.FC = () => {
               </button>
               
               {scanError && (
-                <div className="mt-4 p-4 bg-red-100 text-red-800 rounded-md flex items-start">
-                  <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Scanning Error</p>
-                    <p className="text-sm mt-1">{scanError}</p>
+                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-100">
+                  <div className="flex items-start">
+                    <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="text-red-800 font-medium mb-1">Unable to Process QR Code</h3>
+                      <div className="text-red-700 text-sm whitespace-pre-line">{scanError}</div>
+                      
+                      <div className="mt-4 flex gap-3">
+                        <button
+                          onClick={retryScanning}
+                          className="flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Try Again
+                        </button>
+                        <button
+                          onClick={() => navigate('/search')}
+                          className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                        >
+                          <Search className="w-4 h-4 mr-2" />
+                          Search Instead
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -288,13 +314,6 @@ const QRScanner: React.FC = () => {
               >
                 <Search className="w-5 h-5 mr-2" />
                 Search Restaurants
-              </button>
-              
-              <button
-                onClick={simulateScan}
-                className="w-full py-3 bg-gray-200 text-gray-800 rounded-lg font-medium shadow-sm hover:bg-gray-300 transition-colors"
-              >
-                Simulate Scan (Demo)
               </button>
             </div>
           )}
