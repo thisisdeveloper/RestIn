@@ -41,9 +41,7 @@ const QRScanner: React.FC = () => {
       });
 
     return () => {
-      if (html5QrCode?.isScanning) {
-        html5QrCode.stop().catch(error => console.error('Failed to stop QR scanner:', error));
-      }
+      stopScanner();
     };
   }, [location]);
 
@@ -73,7 +71,16 @@ const QRScanner: React.FC = () => {
       setCurrentRestaurant(restaurant);
       if (table) {
         setCurrentTable(table);
+      } else {
+        // If no table is found, use the first available table
+        const firstAvailableTable = restaurant.tables.find(t => t.isAvailable && !t.isLocked);
+        if (firstAvailableTable) {
+          setCurrentTable(firstAvailableTable);
+        }
       }
+
+      // Stop scanning and camera after successful scan
+      stopScanner();
       setScanError(null);
       navigate('/');
     } catch (error) {
@@ -81,6 +88,14 @@ const QRScanner: React.FC = () => {
       setDebugInfo(prev => `${prev}\nError: ${error}`);
       setScanError('An unexpected error occurred. Please try scanning again.');
     }
+  };
+
+  const stopScanner = () => {
+    if (html5QrCode?.isScanning) {
+      html5QrCode.stop().catch(error => console.error('Failed to stop QR scanner:', error));
+    }
+    setIsScanning(false);
+    setStoreScanningState(false);
   };
 
   useEffect(() => {
@@ -124,14 +139,6 @@ const QRScanner: React.FC = () => {
       setCameraPermission('denied');
       setScanError('Camera access denied. Please enable camera access in your browser settings.');
     }
-  };
-
-  const stopScanner = () => {
-    if (html5QrCode?.isScanning) {
-      html5QrCode.stop().catch(error => console.error('Failed to stop QR scanner:', error));
-    }
-    setIsScanning(false);
-    setStoreScanningState(false);
   };
 
   const onScanSuccess = async (decodedText: string) => {
